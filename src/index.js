@@ -1,5 +1,5 @@
 export default class JSONHelper {
-  constructor(obj, idProp, childrenPro) {
+  constructor(obj, idProp, childrenProp) {
     this.id = idProp;
     this.children = childrenProp;
     this.count = 0;
