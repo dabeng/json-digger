@@ -21,16 +21,6 @@ export default class JSONDigger {
     }
   }
 
-  generateClone (obj) {
-    var target = {};
-    for (var i in obj) {
-      if (i !== this.children) {
-        target[i] = obj[i];
-      }
-    }
-    return target;
-   }
-
   findNodeById (obj, id) {
     const _this = this;
     this.countNodes(obj);
@@ -47,7 +37,7 @@ export default class JSONDigger {
         } else {
           if (_this.count === 1) {
             _this.count = _this.total + 0;
-            callback('the node does not exist', null);
+            callback('the node doesn\'t exist', null);
           }
           _this.count--;
           if (obj[_this.children]) {
@@ -161,34 +151,48 @@ export default class JSONDigger {
     }(obj, conditions, callback);
   }
 
-  findParent (obj, node, callback, needCleanNode)  {
-    var that = this;
-    if (this.count === 1) {
-      this.count = this.total + 0;
-      callback('its parent node does not exist', null);
+  findParent (obj, id) {
+    const _this = this;
+    this.countNodes(obj);
+    return new Promise((resolve, reject) => {
+      if (!obj || !Object.keys(obj).length) {
+        reject(new Error('target object is invalid'));
+      } else if (!id) {
+        reject(new Error('target id is invalid'));
+      }
+
+  function findParent (obj, id, callback)  {
+    if (_this.count === 1) {
+      _this.count = _this.total + 0;
+      callback('the parent node doesn\'t exist', null);
     } else {
-      this.count--;
-      if (typeof obj[this.children] !== 'undefined') {
-        var notFind = true;
-        obj[this.children].forEach(function(item) {
-          if (item[that.id] === node[that.id]) {
-            that.count = that.total + 0;
-            if (needCleanNode) {
-              callback(null, that.generateClone(obj));
-            } else {
-              callback(null, obj);
-            }
-            notFind = false;
-            return false;
+      _this.count--;
+      if (typeof obj[_this.children] !== 'undefined') {
+        // var notFind = true;
+        obj[_this.children].forEach(function(child) {
+          if (child[_this.id] === id) {
+            _this.count = _this.total + 0;
+            callback(null, obj);
+            // notFind = false;
+            // return true;
           }
         });
-        if (notFind) {
-          obj[this.children].forEach(function(item) {
-            that.findParent(item, node, callback);
+        // if (notFind) {
+          obj[_this.children].forEach(function(child) {
+            findParent(child, id, callback);
           });
-        }
+        // }
       }
     }
+  }
+      findParent(obj, id, (errorMessage, parent) => {
+        if (errorMessage) {
+          reject(new Error(errorMessage));
+        } else {
+          resolve(parent);
+        }
+      });
+      });
   }
 
   findSiblings (obj, node, callback) {
