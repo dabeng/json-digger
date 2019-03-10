@@ -1,33 +1,24 @@
-export default class JSONHelper {
-  constructor(obj, idProp, childrenProp) {
+export default class JSONDigger {
+  constructor(idProp, childrenProp) {
     this.id = idProp;
     this.children = childrenProp;
     this.count = 0;
-    this.countNodes(obj);
+    // this.countNodes(obj);
     this.total = this.count + 0;
   }
 
-  isEmpty (obj) {
-    for(var property in obj) {
-      return false;
-    }
-    return true;
-   }
-
   countNodes (obj) {
-    var that = this;
+    var _this = this;
     this.count++;
-    return function() {
-      if (!obj || that.isEmpty(obj)) {
-        return false;
-      } else {
-        if (obj[that.children]) {
-          obj[that.children].forEach(function(child) {
-            that.countNodes(child);
-          });
-        }
+    if (!obj || !Object.keys(obj).length) {
+      return false;
+    } else {
+      if (obj[_this.children]) {
+        obj[_this.children].forEach(child => {
+          _this.countNodes(child);
+        });
       }
-    }();
+    }
   }
 
   generateClone (obj) {
@@ -40,23 +31,40 @@ export default class JSONHelper {
     return target;
    }
 
-  findNodeById (obj, id, callback) {
-    if (obj[this.id] === id) {
-      this.count = this.total + 0;
-      callback(null, obj);
-    } else {
-      if (this.count === 1) {
-        this.count = this.total + 0;
-        callback('the node does not exist', null);
+  findNodeById (obj, id) {
+    const _this = this;
+    this.countNodes(obj);
+    return new Promise((resolve, reject) => {
+      if (!obj || !Object.keys(obj).length) {
+        reject(new Error('target object is invalid'));
+      } else if (!id) {
+        reject(new Error('target id is invalid'));
       }
-      this.count--;
-      if (obj[this.children]) {
-        var that = this;
-        obj[this.children].forEach(function(node) {
-          that.findNodeById(node, id, callback);
-        });
+      function findNodeById (obj, id, callback) {
+        if (obj[_this.id] === id) {
+          _this.count = _this.total + 0;
+          callback(null, obj);
+        } else {
+          if (_this.count === 1) {
+            _this.count = _this.total + 0;
+            callback('the node does not exist', null);
+          }
+          _this.count--;
+          if (obj[_this.children]) {
+            obj[_this.children].forEach(node => {
+              findNodeById(node, id, callback);
+            });
+          }
+        }
       }
-    }
+      findNodeById(obj, id, (errorMessage, node) => {
+        if (errorMessage) {
+          reject(new Error(errorMessage));
+        } else {
+          resolve(node);
+        }
+      });
+    });
   }
 
   matchConditions (obj, conditions) {
