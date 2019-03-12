@@ -186,27 +186,17 @@ export default class JSONDigger {
   }
 
   async findSiblings (obj, id) {
-    var _this = this;
-    // this.findParent(obj, node, function(err, parent) {
-    //   if (err) {
-    //     callback('its sibling nodes do not exist', null);
-    //   } else {
-    //     var siblings = [];
-    //     parent[that.children].forEach(function(item) {
-    //       if (item[that.id] !== node[that.id]) {
-    //         siblings.push(that.generateClone(item));
-    //       }
-    //     });
-    //     callback(null, siblings);
-    //   }
-    // }, false);
+    const _this = this;
+    if (!obj || !Object.keys(obj).length || !id) {
+      throw new Error('One or more input parameters are invalid');
+    }
     try {
       const parent = await this.findParent(obj, id);
       return parent[this.children].filter(child => {
         return child[_this.id] !== id;
       });
     } catch (err) {
-      throw new Error('sibling nodes doesn\'t exist');
+      throw new Error('the sibling nodes don\'t exist');
     }
   }
 

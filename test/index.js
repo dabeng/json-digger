@@ -73,7 +73,7 @@ describe('JSONDigger', () => {
     });
 
     context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "target object is invalid" when providing empty object', async () => {
+      it('should throw an error with message "One or more input parameters are invalid"', async () => {
         try {
           await digger.findNodeById(null, '6');
         } catch (err) {
@@ -144,7 +144,7 @@ describe('JSONDigger', () => {
     });
 
     context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "target object is invalid" when providing empty object', async () => {
+      it('should throw an error with message "One or more input parameters are invalid"', async () => {
         try {
           await digger.findParent(null, '6');
         } catch (err) {
@@ -188,24 +188,73 @@ describe('JSONDigger', () => {
   describe('#findSiblings()', () => {
 
     context('when the sibling nodes exist', () => {
-      it('should return 3 sibling nodes when id is "2"', async () => {
+      it('should return 3 sibling nodes when searching bomiao\'s siblings', async () => {
         const siblings = await digger.findSiblings(datasource, '2');
         siblings.length.should.equal(3);
         siblings[siblings.length - 1].name.should.equal('Chun Miao');
       });
 
-      it('should return 1 sibling nodes when id is "6"', async () => {
+      it('should return 1 sibling nodes when searching panpang\'s siblings', async () => {
         const siblings = await digger.findSiblings(datasource, '6');
         siblings.length.should.equal(1);
         siblings[siblings.length - 1].name.should.equal('Xiang Xiang');
       });
 
-      it('should return 0 sibling nodes when id is "10"', async () => {
+      it('should return 0 sibling nodes when searching renwu\'s siblings', async () => {
         const siblings = await digger.findSiblings(datasource, '10');
         siblings.length.should.equal(0);
-        // siblings[siblings.length - 1].name.should.equal('Xiang Xiang');
       });
 
+    });
+
+    context('when the sibling nodes don\'t exist', () => {
+      it('should throw an error with message "the sibling nodes don\'t exist"', async () => {
+        try {
+          await digger.findSiblings(datasource, '1');
+        } catch (err) {
+          err.message.should.equal('the sibling nodes don\'t exist');
+        }
+      });
+    });
+
+    context('when users don\'t provide enough and valid parameters', () => {
+      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+        try {
+          await digger.findSiblings(null, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findSiblings(undefined, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findSiblings({}, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findSiblings(datasource, null);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findSiblings(datasource, undefined);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findSiblings(datasource, '');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+      });
     });
 
   });
