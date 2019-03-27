@@ -200,22 +200,52 @@ export default class JSONDigger {
     }
   }
 
-  findAncestors (obj, node, callback) {
-    var that = this;
-    if (node[this.id] === obj[this.id]) {
-      var copy = nodes.slice(0);
-      nodes = [];
-      callback(null, copy);
-    } else {
-      this.findParent(obj, node, function(err, parent) {
-      if (err) {
-        callback('its ancestor nodes do not exist', null);
-      } else {
-        nodes.push(parent);
-        that.findAncestors(obj, parent, callback);
+  // findAncestors (obj, node, callback) {
+  //   var that = this;
+  //   if (node[this.id] === obj[this.id]) {
+  //     var copy = nodes.slice(0);
+  //     nodes = [];
+  //     callback(null, copy);
+  //   } else {
+  //     this.findParent(obj, node, function(err, parent) {
+  //     if (err) {
+  //       callback('its ancestor nodes do not exist', null);
+  //     } else {
+  //       nodes.push(parent);
+  //       that.findAncestors(obj, parent, callback);
+  //     }
+  //   });
+  //   }
+  // }
+
+  findAncestors (obj, id) {
+    const _this = this;
+    return new Promise((resolve, reject) => {
+      findAncestors (obj, id, callback) {
+        var that = this;
+        if (node[this.id] === obj[this.id]) {
+          var copy = nodes.slice(0);
+          nodes = [];
+          callback(null, copy);
+        } else {
+          this.findParent(obj, node, function(err, parent) {
+          if (err) {
+            callback('its ancestor nodes do not exist', null);
+          } else {
+            nodes.push(parent);
+            that.findAncestors(obj, parent, callback);
+          }
+        });
+        }
       }
+      findAncestors(obj, id, (errorMessage, parent) => {
+        if (errorMessage) {
+          reject(new Error(errorMessage));
+        } else {
+          resolve(parent);
+        }
+      });
     });
-    }
   }
 
 };
