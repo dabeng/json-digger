@@ -220,31 +220,38 @@ export default class JSONDigger {
 
   findAncestors (obj, id) {
     const _this = this;
-    return new Promise((resolve, reject) => {
-      findAncestors (obj, id, callback) {
-        var that = this;
-        if (node[this.id] === obj[this.id]) {
-          var copy = nodes.slice(0);
-          nodes = [];
-          callback(null, copy);
+    return new Promise(async(resolve, reject) => {
+      let  nodes = [];
+      async function findAncestors (obj, id) {
+        if (id === obj[_this.id]) {
+          return nodes.slice(0);
         } else {
-          this.findParent(obj, node, function(err, parent) {
-          if (err) {
-            callback('its ancestor nodes do not exist', null);
-          } else {
-            nodes.push(parent);
-            that.findAncestors(obj, parent, callback);
-          }
-        });
+        //   _this.findParent(obj, node, function(err, parent) {
+        //   if (err) {
+        //     callback('its ancestor nodes do not exist', null);
+        //   } else {
+        //     nodes.push(parent);
+        //     _this.findAncestors(obj, parent[_this.id], callback);
+        //   }
+        // });
+            try {
+      const parent = await _this.findParent(obj, id);
+      nodes.push(parent);
+      return findAncestors(obj, parent[_this.id]);
+
+    } catch (err) {
+      throw new Error('its ancestor nodes don\'t exist');
+    }
         }
       }
-      findAncestors(obj, id, (errorMessage, parent) => {
-        if (errorMessage) {
-          reject(new Error(errorMessage));
-        } else {
-          resolve(parent);
-        }
-      });
+
+try {
+    const ancestors = await findAncestors(obj, id);
+    resolve(ancestors);
+    } catch (err) {
+      reject(err);
+    }
+
     });
   }
 

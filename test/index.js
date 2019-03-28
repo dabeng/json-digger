@@ -259,4 +259,23 @@ describe('JSONDigger', () => {
 
   });
 
+  describe('#findAncestors()', () => {
+
+    context('when the ancestor nodes exist', () => {
+      it('should return 1 ancestor nodes when searching sumiao\'s ancestors', async () => {
+        const ancestors = await digger.findAncestors(datasource, '3');
+        ancestors.length.should.equal(1);
+        ancestors[0].name.should.equal('Lao Lao');
+      });
+
+      it('should return 2 ancestor nodes when searching heihei\'s ancestors', async () => {
+        const ancestors = await digger.findAncestors(datasource, '5');
+        ancestors.length.should.equal(2);
+        ancestors[0].name.should.equal('Su Miao');
+        ancestors[1].name.should.equal('Lao Lao');
+      });
+    });
+
+  });
+
 });
