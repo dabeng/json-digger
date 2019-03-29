@@ -274,6 +274,64 @@ describe('JSONDigger', () => {
         ancestors[0].name.should.equal('Su Miao');
         ancestors[1].name.should.equal('Lao Lao');
       });
+
+      it('should return 3 ancestor nodes when searching xiangxiang\'s ancestors', async () => {
+        const ancestors = await digger.findAncestors(datasource, '7');
+        ancestors.length.should.equal(3);
+        ancestors[0].name.should.equal('Hei Hei');
+        ancestors[1].name.should.equal('Su Miao');
+        ancestors[2].name.should.equal('Lao Lao');
+      });
+    });
+
+    context('when the ancestor nodes don\'t exist', () => {
+      it('should throw an error with message "the ancestor nodes don\'t exist"', async () => {
+        try {
+          await digger.findAncestors(datasource, '1');
+        } catch (err) {
+          err.message.should.equal('the ancestor nodes don\'t exist');
+        }
+      });
+    });
+
+    context('when users don\'t provide enough and valid parameters', () => {
+      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+        try {
+          await digger.findAncestors(null, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findAncestors(undefined, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findAncestors({}, '6');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findAncestors(datasource, null);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findAncestors(datasource, undefined);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findAncestors(datasource, '');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+      });
     });
 
   });
