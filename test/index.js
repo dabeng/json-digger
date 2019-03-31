@@ -4,10 +4,10 @@ should();
 
 describe('JSONDigger', () => {
 
-  let datasource, digger, errMessage;
+  let datasource, digger;
 
   before(() => {
-    errMessage = 'One or more input parameters are invalid';
+
   });
 
   beforeEach(() => {
@@ -15,106 +15,205 @@ describe('JSONDigger', () => {
       id: '1',
       name: 'Lao Lao',
       title: 'general manager',
+      isShareholder: true,
+      birthYear: 1940,
       children: [
-        { id: '2', name: 'Bo Miao', title: 'department manager',
+        { id: '2', name: 'Bo Miao', title: 'department manager', isShareholder: true, birthYear: 1960,
           children: [
-            { id: '10', name: 'Ren Wu', title: 'senior QA' }
+            { id: '10', name: 'Ren Wu', title: 'principle engineer', isShareholder: false, birthYear: 1960 }
           ]
         },
         {
           id: '3',
           name: 'Su Miao',
           title: 'department manager',
+          isShareholder: true,
+          birthYear: 1961,
           children: [
-            { id: '4', name: 'Tie Hua', title: 'senior engineer' },
+            { id: '4', name: 'Tie Hua', title: 'principle engineer', isShareholder: false, birthYear: 1961 },
             {
               id: '5',
               name: 'Hei Hei',
               title: 'senior engineer',
+              isShareholder: false,
+              birthYear: 1980,
               children: [
-                { id: '6', name: 'Pang Pang', title: 'engineer' },
-                { id: '7', name: 'Xiang Xiang', title: 'UE engineer' }
+                { id: '6', name: 'Pang Pang', title: 'UE engineer', isShareholder: false, birthYear: 1984 },
+                { id: '7', name: 'Xiang Xiang', title: 'QA engineer', isShareholder: false, birthYear: 2014 }
               ]
             }
           ]
         },
-        { id: '8', name: 'Hong Miao', title: 'department manager' },
-        { id: '9', name: 'Chun Miao', title: 'department manager' }
+        { id: '8', name: 'Hong Miao', title: 'department manager', isShareholder: true, birthYear: 1962 },
+        { id: '9', name: 'Chun Miao', title: 'department manager', isShareholder: true, birthYear: 1963 }
       ]
     };
-    digger = new JSONDigger('id', 'children');
+    digger = new JSONDigger(datasource, 'id', 'children');
   });
 
   describe('#findNodeById()', () => {
 
     context('when the node with given id exist', () => {
       it('should return node "Lao Lao" when id is "1"', async () => {
-        const node = await digger.findNodeById(datasource, '1');
+        const node = await digger.findNodeById('1');
         node.name.should.equal('Lao Lao');
       });
       it('should return node "Tie Hua" when id is "4"', async () => {
-        const node = await digger.findNodeById(datasource, '4');
+        const node = await digger.findNodeById('4');
         node.name.should.equal('Tie Hua');
       });
       it('should return node "Pang Pang" when id is "6"', async () => {
-        const node = await digger.findNodeById(datasource, '6');
+        const node = await digger.findNodeById('6');
         node.name.should.equal('Pang Pang');
       });
     });
 
     context('when the node with given id doesn\'t exist', () => {
-      it('should throw an error with message "the node doesn\'t exist"', async () => {
+      it('should throw an error with message "The node doesn\'t exist."', async () => {
         try {
-          await digger.findNodeById(datasource, '11');
+          await digger.findNodeById('11');
         } catch (err) {
-          err.message.should.equal('the node doesn\'t exist');
+          err.message.should.equal('The node doesn\'t exist.');
         }
       });
     });
 
     context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+      it('should throw an error with message "Parameter id is invalid."', async () => {
         try {
-          await digger.findNodeById(null, '6');
+          await digger.findNodeById(null);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal('Parameter id is invalid.');
         }
 
         try {
-          await digger.findNodeById(undefined, '6');
+          await digger.findNodeById(undefined);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal('Parameter id is invalid.');
         }
 
         try {
-          await digger.findNodeById({}, '6');
+          await digger.findNodeById('');
         } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findNodeById(datasource, null);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findNodeById(datasource, undefined);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findNodeById(datasource, '');
-        } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal('Parameter id is invalid.');
         }
       });
     });
 
   });
 
-  describe('#findParent()', () => {
+  describe('#findNodes()', () => {
+
+    context('when the nodes exist', () => {
+      it('should return node xiangxiang with name "Xiang Xiang"', async () => {
+        const nodes = await digger.findNodes({'name': 'Xiang Xiang'});
+        nodes.length.should.equal(1);
+        nodes[0].name.should.equal('Xiang Xiang');
+      });
+
+      it('there is only one employee who is born in 1980', async () => {
+        const nodes = await digger.findNodes({ 'birthYear': 1980 });
+        nodes.length.should.equal(1);
+      });
+
+      it('there are 5 engineer nodes', async () => {
+        const nodes = await digger.findNodes({ 'title': /engineer/i });
+        nodes.length.should.equal(5);
+      });
+
+      it('there are 5 shareholder nodes', async () => {
+        const nodes = await digger.findNodes({ 'isShareholder': true });
+        nodes.length.should.equal(5);
+      });
+
+      it('there are 5 non-shareholder nodes', async () => {
+        const nodes = await digger.findNodes({ 'isShareholder': false });
+        nodes.length.should.equal(5);
+      });
+
+      it('there are 5 engineer nodes', async () => {
+        const nodes = await digger.findNodes({ 'title': /engineer/i });
+        nodes.length.should.equal(5);
+      });
+
+      it('there are 2 post-80s engineer nodes', async () => {
+        const nodes = await digger.findNodes({ 'title': /engineer/i, 'birthYear': { '>=': 1980, '<': 1990 }});
+        nodes.length.should.equal(2);
+      });
+    });
+
+    context('when the nodes don\'t exist', () => {
+      it('should throw an error with message "the nodes don\'t exist"', async () => {
+        const errMessage = 'The nodes don\'t exist.';
+        try {
+          await digger.findNodes({ 'name': 'Dan Dan' });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'birthYear': 2000 });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'title': /intern/i });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'xx': 'xx' });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'xx': 100 });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'xx': true });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.findNodes({ 'xx': /xx/i });
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+      });
+    });
+
+    /*context('when users don\'t provide enough and valid parameters', () => {
+      it('should throw an error with message "Parameter conditions are invalid."', async () => {
+        try {
+          await digger.findNodes(null);
+        } catch (err) {
+          err.message.should.equal('Parameter conditions are invalid.');
+        }
+
+        try {
+          await digger.findNodes(undefined);
+        } catch (err) {
+          err.message.should.equal('Parameter conditions are invalid.');
+        }
+
+        try {
+          await digger.findNodes('');
+        } catch (err) {
+          err.message.should.equal('Parameter conditions are invalid.');
+        }
+      });
+    });*/
+
+  });
+
+  /*describe('#findParent()', () => {
 
     context('when the parent node exists', () => {
       it('should return node "Su Miao" when id is "4"', async () => {
@@ -334,6 +433,6 @@ describe('JSONDigger', () => {
       });
     });
 
-  });
+  });*/
 
 });

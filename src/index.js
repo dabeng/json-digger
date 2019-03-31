@@ -1,10 +1,9 @@
 export default class JSONDigger {
-  constructor(idProp, childrenProp) {
+  constructor(datasource, idProp, childrenProp) {
+    this.ds = datasource;
     this.id = idProp;
     this.children = childrenProp;
     this.count = 0;
-    // this.countNodes(obj);
-    // this.total = this.count + 0;
   }
 
   countNodes (obj) {
@@ -13,29 +12,63 @@ export default class JSONDigger {
     if (!obj || !Object.keys(obj).length) {
       return false;
     } else {
-      if (obj[_this.children]) {
-        obj[_this.children].forEach(child => {
+      if (obj[this.children]) {
+        obj[this.children].forEach(child => {
           _this.countNodes(child);
         });
       }
     }
   }
 
-  findNodeById (obj, id) {
+  // findNodeById (obj, id) {
+  //   const _this = this;
+  //   this.countNodes(obj);
+  //   return new Promise((resolve, reject) => {
+  //     if (!obj || !Object.keys(obj).length || !id) {
+  //       reject(new Error('One or more input parameters are invalid'));
+  //     }
+  //     function findNodeById (obj, id, callback) {
+  //       if (obj[_this.id] === id) {
+  //         _this.count = 0;
+  //         callback(null, obj);
+  //       } else {
+  //         if (_this.count === 1) {
+  //           _this.count = 0;
+  //           callback('the node doesn\'t exist', null);
+  //         }
+  //         _this.count--;
+  //         if (obj[_this.children]) {
+  //           obj[_this.children].forEach(node => {
+  //             findNodeById(node, id, callback);
+  //           });
+  //         }
+  //       }
+  //     }
+  //     findNodeById(obj, id, (msg, node) => {
+  //       if (msg) {
+  //         reject(new Error(msg));
+  //       } else {
+  //         resolve(node);
+  //       }
+  //     });
+  //   });
+  // }
+
+  findNodeById (id) {
     const _this = this;
-    this.countNodes(obj);
+    this.countNodes(this.ds);
     return new Promise((resolve, reject) => {
-      if (!obj || !Object.keys(obj).length || !id) {
-        reject(new Error('One or more input parameters are invalid'));
+      if (!id) {
+        reject(new Error('Parameter id is invalid.'));
       }
       function findNodeById (obj, id, callback) {
         if (obj[_this.id] === id) {
-          // _this.count = _this.total + 0;
+          _this.count = 0;
           callback(null, obj);
         } else {
           if (_this.count === 1) {
-            // _this.count = _this.total + 0;
-            callback('the node doesn\'t exist', null);
+            _this.count = 0;
+            callback('The node doesn\'t exist.', null);
           }
           _this.count--;
           if (obj[_this.children]) {
@@ -45,7 +78,7 @@ export default class JSONDigger {
           }
         }
       }
-      findNodeById(obj, id, (msg, node) => {
+      findNodeById(this.ds, id, (msg, node) => {
         if (msg) {
           reject(new Error(msg));
         } else {
@@ -57,52 +90,52 @@ export default class JSONDigger {
 
   matchConditions (obj, conditions) {
     var flag = true;
-    Object.keys(conditions).forEach(function(item) {
-      if (typeof conditions[item] === 'string' || typeof conditions[item] === 'number') {
+    Object.keys(conditions).some(item => {
+      if (typeof conditions[item] === 'string' || typeof conditions[item] === 'number' || typeof conditions[item] === 'boolean') {
         if (obj[item] !== conditions[item]) {
           flag = false;
-          return false;
+          return true;
         }
       } else if (conditions[item] instanceof RegExp) {
         if (!conditions[item].test(obj[item])) {
           flag = false;
-          return false;
+          return true;
         }
       } else if (typeof conditions[item] === 'object') {
-        Object.keys(conditions[item]).forEach(function(subitem) {
+        Object.keys(conditions[item]).some(subitem => {
           switch (subitem) {
             case '>': {
               if (!(obj[item] > conditions[item][subitem])) {
                 flag = false;
-                return false;
+                return true;
               }
               break;
             }
             case '<': {
               if (!(obj[item] < conditions[item][subitem])) {
                 flag = false;
-                return false;
+                return true;
               }
               break;
             }
             case '>=': {
               if (!(obj[item] >= conditions[item][subitem])) {
                 flag = false;
-                return false;
+                return true;
               }
               break;
             }
             case '<=': {
               if (!(obj[item] <= conditions[item][subitem])) {
                 flag = false;
-                return false;
+                return true;
               }
               break;
             }
             case '!==': {
               if (!(obj[item] !== conditions[item][subitem])) {
                 flag = false;
-                return false;
+                return true;
               }
               break;
             }
@@ -113,40 +146,46 @@ export default class JSONDigger {
         }
       }
     });
-    if (!flag) {
-      return false;
-    }
-    return true;
+
+    return flag;
   }
 
-  findNodes (obj, conditions, callback) {
-    var that = this;
-    var copy = []; // ths shallow copy of nodes array
-    return function(obj, conditions, callback) {
-      if (that.matchConditions(obj, conditions)) {
-        nodes.push(obj);
-        if (that.count === 1) {
-          that.count = that.total + 0;
-          copy = nodes.slice(0);
-          nodes = [];
-          callback(null, copy);
+  findNodes (conditions) {
+    const _this = this;
+    this.countNodes(this.ds);
+    return new Promise(async(resolve, reject) => {
+      if (!conditions || !Object.keys(conditions).length) {
+        reject(new Error('Parameter conditions are invalid.'));
+      }
+      let nodes = [];
+      function findNodes(obj, conditions, callback) {
+        if (_this.matchConditions(obj, conditions)) {
+          nodes.push(obj);
+          if (_this.count === 1) {
+            _this.count = 0;
+            callback(!nodes.length ? 'The nodes don\'t exist.' : null, nodes.slice(0));
+          }
+        } else {
+          if (_this.count === 1) {
+            _this.count = 0;
+            callback(!nodes.length ? 'The nodes don\'t exist.' : null, nodes.slice(0));
+          }
         }
-        that.count--;
-      } else {
-        if (that.count === 1) {
-          that.count = that.total + 0;
-          copy = nodes.slice(0);
-          nodes = [];
-          callback(null, copy);
-        }
-        that.count--;
-        if (obj[that.children]) {
-          obj[that.children].forEach(function(child) {
-            that.findNodes(child, conditions, callback);
+        _this.count--;
+        if (obj[_this.children]) {
+          obj[_this.children].forEach(child => {
+            findNodes(child, conditions, callback);
           });
         }
       }
-    }(obj, conditions, callback);
+      findNodes(this.ds, conditions, (msg, nodes) => {
+        if (msg) {
+          reject(new Error(msg));
+        } else {
+          resolve(nodes);
+        }
+      });
+    });
   }
 
   findParent (obj, id) {
@@ -158,14 +197,14 @@ export default class JSONDigger {
       }
       function findParent (obj, id, callback)  {
         if (_this.count === 1) {
-          // _this.count = _this.total + 0;
+          _this.count = 0;
           callback('the parent node doesn\'t exist', null);
         } else {
           _this.count--;
           if (typeof obj[_this.children] !== 'undefined') {
             obj[_this.children].forEach(function(child) {
               if (child[_this.id] === id) {
-                // _this.count = _this.total + 0;
+                _this.count = 0;
                 callback(null, obj);
               }
             });
@@ -230,6 +269,26 @@ export default class JSONDigger {
         reject(err);
       }
     });
+  }
+
+  addChildren () {
+
+  }
+
+  addSiblings () {
+
+  }
+
+  addParent () {
+
+  }
+
+  removeNodes () {
+
+  }
+
+  editNode () {
+
   }
 
 };
