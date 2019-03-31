@@ -189,7 +189,7 @@ describe('JSONDigger', () => {
       });
     });
 
-    /*context('when users don\'t provide enough and valid parameters', () => {
+    context('when users don\'t provide enough and valid parameters', () => {
       it('should throw an error with message "Parameter conditions are invalid."', async () => {
         try {
           await digger.findNodes(null);
@@ -197,19 +197,19 @@ describe('JSONDigger', () => {
           err.message.should.equal('Parameter conditions are invalid.');
         }
 
-        try {
-          await digger.findNodes(undefined);
-        } catch (err) {
-          err.message.should.equal('Parameter conditions are invalid.');
-        }
+        // try {
+        //   await digger.findNodes(undefined);
+        // } catch (err) {
+        //   err.message.should.equal('Parameter conditions are invalid.');
+        // }
 
-        try {
-          await digger.findNodes('');
-        } catch (err) {
-          err.message.should.equal('Parameter conditions are invalid.');
-        }
+        // try {
+        //   await digger.findNodes('');
+        // } catch (err) {
+        //   err.message.should.equal('Parameter conditions are invalid.');
+        // }
       });
-    });*/
+    });
 
   });
 

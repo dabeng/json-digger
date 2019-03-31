@@ -188,9 +188,9 @@ export default class JSONDigger {
     });
   }
 
-  findParent (obj, id) {
+  findParent (id) {
     const _this = this;
-    this.countNodes(obj);
+    this.countNodes(this.ds);
     return new Promise((resolve, reject) => {
       if (!obj || !Object.keys(obj).length || !id) {
         reject(new Error('One or more input parameters are invalid'));
@@ -214,7 +214,7 @@ export default class JSONDigger {
           }
         }
       }
-      findParent(obj, id, (msg, parent) => {
+      findParent(this.ds, id, (msg, parent) => {
         if (msg) {
           reject(new Error(msg));
         } else {
