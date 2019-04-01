@@ -271,8 +271,13 @@ export default class JSONDigger {
     });
   }
 
-  addChildren (id, data) {
-
+  async addChildren (id, data) {
+    try {
+      const parent = await this.findNodeById(id);
+      parent[this.children].push(data);
+    } catch (err) {
+      throw new Error('Failed to add child nodes.');
+    }
   }
 
   addSiblings (id, data) {

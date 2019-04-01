@@ -305,7 +305,7 @@ describe('JSONDigger', () => {
       });
     });
 
-    context('when users don\'t provide enough and valid parameters', () => {
+    context('when users don\'t provide valid parameters', () => {
       it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
           await digger.findSiblings(null);
@@ -366,7 +366,7 @@ describe('JSONDigger', () => {
       });
     });
 
-    context('when users don\'t provide enough and valid parameters', () => {
+    context('when users don\'t provide valid parameters', () => {
       it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
           await digger.findAncestors(null);
@@ -388,6 +388,21 @@ describe('JSONDigger', () => {
       });
     });
 
+  });
+
+  describe('#addChildren()', () => {
+
+    context('when adding single node', () => {
+      it('should find the added node', async () => {
+        await digger.addChildren('1', { id: '11', name: 'Yu Jie', title: 'department manager', isShareholder: true, birthYear: 1960 });
+        const node = await digger.findNodeById('11');
+        node.name.should.equal('Yu Jie');
+      });
+    });
+
+    context('when adding multiple nodes', () => {
+
+    });
   });
 
 });
