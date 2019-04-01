@@ -150,6 +150,19 @@ export default class JSONDigger {
     return flag;
   }
 
+  async findChildren (id) {
+    const _this = this;
+    if (!id) {
+      throw new Error('Parameter id is invalid.');
+    }
+    try {
+      const parent = await this.findParent(id);
+      return parent[this.children];
+    } catch (err) {
+      throw new Error('The child nodes don\'t exist.');
+    }
+  }
+
   findNodes (conditions) {
     const _this = this;
     this.countNodes(this.ds);
@@ -272,9 +285,27 @@ export default class JSONDigger {
   }
 
   async addChildren (id, data) {
+    if (!id) {
+      throw new Error('Parameter id is invalid.');
+    }
+    if (data.constructor !== Object && data.constructor !== Array || (data.constructor === Array && !data.every(item => item.constructor === Object))) {
+      throw new Error('Parameter data is invalid.');
+    }
     try {
       const parent = await this.findNodeById(id);
-      parent[this.children].push(data);
+      if (data.constructor === Object) {
+        if (parent[this.children]) {
+          parent[this.children].push(data);
+        } else {
+          parent[this.children] = [data];
+        }
+      } else {
+        if (parent[this.children]) {
+          parent[this.children].push(...data);
+        } else {
+          parent[this.children] = data;
+        }
+      }
     } catch (err) {
       throw new Error('Failed to add child nodes.');
     }

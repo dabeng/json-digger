@@ -393,15 +393,28 @@ describe('JSONDigger', () => {
   describe('#addChildren()', () => {
 
     context('when adding single node', () => {
-      it('should find the added node', async () => {
-        await digger.addChildren('1', { id: '11', name: 'Yu Jie', title: 'department manager', isShareholder: true, birthYear: 1960 });
-        const node = await digger.findNodeById('11');
-        node.name.should.equal('Yu Jie');
+      it('can add child node to the root node', async () => {
+        await digger.addChildren('1', { id: '11', name: 'Yu Jie' });
+        datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
+      });
+
+      it('can add child node to the middle level node', async () => {
+        await digger.addChildren('5', { id: '11', name: 'Dan Dan' });
+        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
+      });
+
+      it('can add child node to the leaf node', async () => {
+        await digger.addChildren('10', { id: '11', name: 'Fei Xuan' });
+        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
-
+      it('should find the added nodes', async () => {
+        await digger.addChildren('1', [{ id: '11', name: 'Yu Jie' }, { id: '12', name: 'Yu Li' }]);
+        datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
+        datasource['children'].some(item => item.name === 'Yu Li').should.be.true;
+      });
     });
   });
 
