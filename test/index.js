@@ -4,10 +4,10 @@ should();
 
 describe('JSONDigger', () => {
 
-  let datasource, digger;
+  let datasource, digger, idErrMsg;
 
   before(() => {
-
+    idErrMsg = 'Parameter id is invalid.';
   });
 
   beforeEach(() => {
@@ -78,24 +78,24 @@ describe('JSONDigger', () => {
       });
     });
 
-    context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "Parameter id is invalid."', async () => {
+    context('when users don\'t provide valid parameters', () => {
+      it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
           await digger.findNodeById(null);
         } catch (err) {
-          err.message.should.equal('Parameter id is invalid.');
+          err.message.should.equal(idErrMsg);
         }
 
         try {
           await digger.findNodeById(undefined);
         } catch (err) {
-          err.message.should.equal('Parameter id is invalid.');
+          err.message.should.equal(idErrMsg);
         }
 
         try {
           await digger.findNodeById('');
         } catch (err) {
-          err.message.should.equal('Parameter id is invalid.');
+          err.message.should.equal(idErrMsg);
         }
       });
     });
@@ -143,8 +143,9 @@ describe('JSONDigger', () => {
     });
 
     context('when the nodes don\'t exist', () => {
-      it('should throw an error with message "the nodes don\'t exist"', async () => {
-        const errMessage = 'The nodes don\'t exist.';
+      const errMessage = 'The nodes don\'t exist.';
+
+      it('should throw an error with message "' + errMessage + '"', async () => {
         try {
           await digger.findNodes({ 'name': 'Dan Dan' });
         } catch (err) {
@@ -189,95 +190,81 @@ describe('JSONDigger', () => {
       });
     });
 
-    context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "Parameter conditions are invalid."', async () => {
+    context('when users don\'t provide valid parameters', () => {
+      const errMessage = 'Parameter conditions are invalid.';
+
+      it('should throw an error with message "' +  + '"', async () => {
         try {
           await digger.findNodes(null);
         } catch (err) {
-          err.message.should.equal('Parameter conditions are invalid.');
+          err.message.should.equal(errMessage);
         }
 
-        // try {
-        //   await digger.findNodes(undefined);
-        // } catch (err) {
-        //   err.message.should.equal('Parameter conditions are invalid.');
-        // }
+        try {
+          await digger.findNodes(undefined);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
 
-        // try {
-        //   await digger.findNodes('');
-        // } catch (err) {
-        //   err.message.should.equal('Parameter conditions are invalid.');
-        // }
+        try {
+          await digger.findNodes('');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
       });
     });
 
   });
 
-  /*describe('#findParent()', () => {
+  describe('#findParent()', () => {
 
     context('when the parent node exists', () => {
       it('should return node "Su Miao" when id is "4"', async () => {
-        const node = await digger.findParent(datasource, '4');
+        const node = await digger.findParent('4');
         node.name.should.equal('Su Miao');
       });
       it('should return node "Hei Hei" when id is "7"', async () => {
-        const node = await digger.findParent(datasource, '7');
+        const node = await digger.findParent('7');
         node.name.should.equal('Hei Hei');
       });
     });
 
     context('when the parent node doesn\'t exist', () => {
-      it('should throw an error with message "the parent node doesn\'t exist"', async () => {
+      const errMessage = 'The parent node doesn\'t exist.';
+
+      it('should throw an error with message "' + errMessage + '"', async () => {
         try {
-          await digger.findParent(datasource, '1');
+          await digger.findParent('1');
         } catch (err) {
-          err.message.should.equal('the parent node doesn\'t exist');
+          err.message.should.equal(errMessage);
         }
 
         try {
-          await digger.findParent(datasource, '11');
+          await digger.findParent('11');
         } catch (err) {
-          err.message.should.equal('the parent node doesn\'t exist');
+          err.message.should.equal(errMessage);
         }
       });
     });
 
-    context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+    context('when users don\'t provide valid parameters', () => {
+      it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
-          await digger.findParent(null, '6');
+          await digger.findParent(null);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findParent(undefined, '6');
+          await digger.findParent(undefined);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findParent({}, '6');
+          await digger.findParent('');
         } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findParent(datasource, null);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findParent(datasource, undefined);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findParent(datasource, '');
-        } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
       });
     });
@@ -288,70 +275,54 @@ describe('JSONDigger', () => {
 
     context('when the sibling nodes exist', () => {
       it('should return 3 sibling nodes when searching bomiao\'s siblings', async () => {
-        const siblings = await digger.findSiblings(datasource, '2');
+        const siblings = await digger.findSiblings('2');
         siblings.length.should.equal(3);
         siblings[siblings.length - 1].name.should.equal('Chun Miao');
       });
 
       it('should return 1 sibling nodes when searching panpang\'s siblings', async () => {
-        const siblings = await digger.findSiblings(datasource, '6');
+        const siblings = await digger.findSiblings('6');
         siblings.length.should.equal(1);
         siblings[siblings.length - 1].name.should.equal('Xiang Xiang');
       });
 
       it('should return 0 sibling nodes when searching renwu\'s siblings', async () => {
-        const siblings = await digger.findSiblings(datasource, '10');
+        const siblings = await digger.findSiblings('10');
         siblings.length.should.equal(0);
       });
 
     });
 
     context('when the sibling nodes don\'t exist', () => {
-      it('should throw an error with message "the sibling nodes don\'t exist"', async () => {
+      const errMessage = 'The sibling nodes don\'t exist.';
+
+      it('should throw an error with message "' + errMessage + '"', async () => {
         try {
-          await digger.findSiblings(datasource, '1');
+          await digger.findSiblings('1');
         } catch (err) {
-          err.message.should.equal('the sibling nodes don\'t exist');
+          err.message.should.equal(errMessage);
         }
       });
     });
 
     context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+      it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
-          await digger.findSiblings(null, '6');
+          await digger.findSiblings(null);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findSiblings(undefined, '6');
+          await digger.findSiblings(undefined);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findSiblings({}, '6');
+          await digger.findSiblings('');
         } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findSiblings(datasource, null);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findSiblings(datasource, undefined);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findSiblings(datasource, '');
-        } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
       });
     });
@@ -362,20 +333,20 @@ describe('JSONDigger', () => {
 
     context('when the ancestor nodes exist', () => {
       it('should return 1 ancestor nodes when searching sumiao\'s ancestors', async () => {
-        const ancestors = await digger.findAncestors(datasource, '3');
+        const ancestors = await digger.findAncestors('3');
         ancestors.length.should.equal(1);
         ancestors[0].name.should.equal('Lao Lao');
       });
 
       it('should return 2 ancestor nodes when searching heihei\'s ancestors', async () => {
-        const ancestors = await digger.findAncestors(datasource, '5');
+        const ancestors = await digger.findAncestors('5');
         ancestors.length.should.equal(2);
         ancestors[0].name.should.equal('Su Miao');
         ancestors[1].name.should.equal('Lao Lao');
       });
 
       it('should return 3 ancestor nodes when searching xiangxiang\'s ancestors', async () => {
-        const ancestors = await digger.findAncestors(datasource, '7');
+        const ancestors = await digger.findAncestors('7');
         ancestors.length.should.equal(3);
         ancestors[0].name.should.equal('Hei Hei');
         ancestors[1].name.should.equal('Su Miao');
@@ -384,55 +355,39 @@ describe('JSONDigger', () => {
     });
 
     context('when the ancestor nodes don\'t exist', () => {
-      it('should throw an error with message "the ancestor nodes don\'t exist"', async () => {
+      const errMessage = 'The ancestor nodes don\'t exist.';
+
+      it('should throw an error with message "' + errMessage + '"', async () => {
         try {
-          await digger.findAncestors(datasource, '1');
+          await digger.findAncestors('1');
         } catch (err) {
-          err.message.should.equal('the ancestor nodes don\'t exist');
+          err.message.should.equal(errMessage);
         }
       });
     });
 
     context('when users don\'t provide enough and valid parameters', () => {
-      it('should throw an error with message "One or more input parameters are invalid"', async () => {
+      it('should throw an error with message "' + idErrMsg + '"', async () => {
         try {
-          await digger.findAncestors(null, '6');
+          await digger.findAncestors(null);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findAncestors(undefined, '6');
+          await digger.findAncestors(undefined);
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
 
         try {
-          await digger.findAncestors({}, '6');
+          await digger.findAncestors('');
         } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findAncestors(datasource, null);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findAncestors(datasource, undefined);
-        } catch (err) {
-          err.message.should.equal(errMessage);
-        }
-
-        try {
-          await digger.findAncestors(datasource, '');
-        } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal(idErrMsg);
         }
       });
     });
 
-  });*/
+  });
 
 });

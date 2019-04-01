@@ -59,7 +59,7 @@ export default class JSONDigger {
     this.countNodes(this.ds);
     return new Promise((resolve, reject) => {
       if (!id) {
-        reject(new Error('Parameter id is invalid.'));
+        return reject(new Error('Parameter id is invalid.'));
       }
       function findNodeById (obj, id, callback) {
         if (obj[_this.id] === id) {
@@ -155,7 +155,7 @@ export default class JSONDigger {
     this.countNodes(this.ds);
     return new Promise(async(resolve, reject) => {
       if (!conditions || !Object.keys(conditions).length) {
-        reject(new Error('Parameter conditions are invalid.'));
+        return reject(new Error('Parameter conditions are invalid.'));
       }
       let nodes = [];
       function findNodes(obj, conditions, callback) {
@@ -192,13 +192,13 @@ export default class JSONDigger {
     const _this = this;
     this.countNodes(this.ds);
     return new Promise((resolve, reject) => {
-      if (!obj || !Object.keys(obj).length || !id) {
-        reject(new Error('One or more input parameters are invalid'));
+      if (!id) {
+        return reject(new Error('Parameter id is invalid.'));
       }
       function findParent (obj, id, callback)  {
         if (_this.count === 1) {
           _this.count = 0;
-          callback('the parent node doesn\'t exist', null);
+          callback('The parent node doesn\'t exist.', null);
         } else {
           _this.count--;
           if (typeof obj[_this.children] !== 'undefined') {
@@ -224,42 +224,42 @@ export default class JSONDigger {
     });
   }
 
-  async findSiblings (obj, id) {
+  async findSiblings (id) {
     const _this = this;
-    if (!obj || !Object.keys(obj).length || !id) {
-      throw new Error('One or more input parameters are invalid');
+    if (!id) {
+      throw new Error('Parameter id is invalid.');
     }
     try {
-      const parent = await this.findParent(obj, id);
+      const parent = await this.findParent(id);
       return parent[this.children].filter(child => {
         return child[_this.id] !== id;
       });
     } catch (err) {
-      throw new Error('the sibling nodes don\'t exist');
+      throw new Error('The sibling nodes don\'t exist.');
     }
   }
 
-  findAncestors (obj, id) {
+  findAncestors (id) {
     const _this = this;
     return new Promise(async(resolve, reject) => {
-      if (!obj || !Object.keys(obj).length || !id) {
-        reject(new Error('One or more input parameters are invalid'));
+      if (!id) {
+        return reject(new Error('Parameter id is invalid.'));
       }
       let  nodes = [];
       async function findAncestors (id) {
         try {
-          if (id === obj[_this.id]) {
+          if (id === _this.ds[_this.id]) {
             if (!nodes.length) {
-              throw new Error('the ancestor nodes don\'t exist');
+              throw new Error('The ancestor nodes don\'t exist.');
             }
             return nodes.slice(0);
           } else {
-            const parent = await _this.findParent(obj, id);
+            const parent = await _this.findParent(id);
             nodes.push(parent);
             return findAncestors(parent[_this.id]);
           }
         } catch (err) {
-          throw new Error('the ancestor nodes don\'t exist');
+          throw new Error('The ancestor nodes don\'t exist.');
         }
       }
       try {
@@ -271,23 +271,23 @@ export default class JSONDigger {
     });
   }
 
-  addChildren () {
+  addChildren (id, data) {
 
   }
 
-  addSiblings () {
+  addSiblings (id, data) {
 
   }
 
-  addParent () {
+  addParent (id, data) {
 
   }
 
-  removeNodes () {
+  removeNodes (ids) {
 
   }
 
-  editNode () {
+  editNode (id, data) {
 
   }
 
