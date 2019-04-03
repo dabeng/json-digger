@@ -4,11 +4,9 @@ should();
 
 describe('JSONDigger', () => {
 
-  let datasource, digger, idErrMsg;
-
-  before(() => {
-    idErrMsg = 'Parameter id is invalid.';
-  });
+  let datasource, digger;
+  const idErrMsg = 'Parameter id is invalid.';
+  const dataErrMsg = 'Parameter data is invalid.';
 
   beforeEach(() => {
     datasource = {
@@ -193,7 +191,7 @@ describe('JSONDigger', () => {
     context('when users don\'t provide valid parameters', () => {
       const errMessage = 'Parameter conditions are invalid.';
 
-      it('should throw an error with message "' +  + '"', async () => {
+      it('should throw an error with message "' + errMessage + '"', async () => {
         try {
           await digger.findNodes(null);
         } catch (err) {
@@ -393,27 +391,135 @@ describe('JSONDigger', () => {
   describe('#addChildren()', () => {
 
     context('when adding single node', () => {
-      it('can add child node to the root node', async () => {
+      it('could add child node to root node', async () => {
         await digger.addChildren('1', { id: '11', name: 'Yu Jie' });
         datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
       });
 
-      it('can add child node to the middle level node', async () => {
+      it('could add child node to middle level node', async () => {
         await digger.addChildren('5', { id: '11', name: 'Dan Dan' });
         datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
       });
 
-      it('can add child node to the leaf node', async () => {
+      it('could add child node to leaf node', async () => {
         await digger.addChildren('10', { id: '11', name: 'Fei Xuan' });
         datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
-      it('should find the added nodes', async () => {
+      it('could add child nodes to root node', async () => {
         await digger.addChildren('1', [{ id: '11', name: 'Yu Jie' }, { id: '12', name: 'Yu Li' }]);
         datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
         datasource['children'].some(item => item.name === 'Yu Li').should.be.true;
+      });
+
+      it('could add child nodes to middle level node', async () => {
+        await digger.addChildren('5', [{ id: '11', name: 'Dan Dan' }, { id: '12', name: 'Er Dan' }]);
+        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
+        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Er Dan').should.be.true;
+      });
+
+      it('could add child nodes to leaf node', async () => {
+        await digger.addChildren('10', [{ id: '11', name: 'Fei Xuan' }, { id: '12', name: 'Er Xuan' }]);
+        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Er Xuan').should.be.true;
+      });
+    });
+
+    context('when users don\'t provide valid parameters', () => {
+      it('should throw an error with message "' + idErrMsg + '"', async () => {
+        try {
+          await digger.addChildren(null);
+        } catch (err) {
+          err.message.should.equal(idErrMsg);
+        }
+
+        try {
+          await digger.addChildren(undefined);
+        } catch (err) {
+          err.message.should.equal(idErrMsg);
+        }
+
+        try {
+          await digger.addChildren('');
+        } catch (err) {
+          err.message.should.equal(idErrMsg);
+        }
+      });
+
+      it('should throw an error with message "' + dataErrMsg + '"', async () => {
+        try {
+          await digger.addChildren('1');
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', 1);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', 'xx');
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', null);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', undefined);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', {});
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', []);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', [1]);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', ['xx']);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', [null]);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', [undefined]);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addChildren('1', [{}]);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
       });
     });
   });

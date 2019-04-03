@@ -288,7 +288,7 @@ export default class JSONDigger {
     if (!id) {
       throw new Error('Parameter id is invalid.');
     }
-    if (data.constructor !== Object && data.constructor !== Array || (data.constructor === Array && !data.every(item => item.constructor === Object))) {
+    if (!data || (data.constructor !== Object && data.constructor !== Array) || (data.constructor === Array && !data.every(item => item && item.constructor === Object))) {
       throw new Error('Parameter data is invalid.');
     }
     try {
