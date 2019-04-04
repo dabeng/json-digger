@@ -284,6 +284,7 @@ export default class JSONDigger {
     });
   }
 
+  // validate the input parameters id and data(could be oject or array)
   validateParams(id, data) {
     if (!id) {
       throw new Error('Parameter id is invalid.');
@@ -333,8 +334,23 @@ export default class JSONDigger {
     }
   }
 
-  addParent (id, data) {
-
+  addRoot (data) {
+    const _this = this;
+    if (!data || data.constructor !== Object || (data.constructor === Object && !Object.keys(data).length)) {
+      throw new Error('Parameter data is invalid.');
+    }
+    try {
+      this.ds[this.children] = [Object.assign({}, this.ds)];
+      delete data[this.children];
+      Object.keys(this.ds).filter(prop => prop !== this.children).forEach(prop => {
+        if (!data[prop]) {
+          delete this.ds[prop];
+        }
+      });
+      Object.assign(this.ds, data);
+    } catch (err) {
+      throw new Error('Failed to add root node.');
+    }
   }
 
   removeNodes (ids) {

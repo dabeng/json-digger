@@ -1,6 +1,7 @@
-import { should } from 'chai';
+import { should, expect } from 'chai';
 import JSONDigger from '../src/index';
 should();
+// expect();
 
 describe('JSONDigger', () => {
 
@@ -67,7 +68,7 @@ describe('JSONDigger', () => {
     });
 
     context('when the node with given id doesn\'t exist', () => {
-      it('should throw an error with message "The node doesn\'t exist."', async () => {
+      it('should throw an error', async () => {
         try {
           await digger.findNodeById('11');
         } catch (err) {
@@ -77,7 +78,7 @@ describe('JSONDigger', () => {
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.findNodeById(null);
         } catch (err) {
@@ -143,7 +144,7 @@ describe('JSONDigger', () => {
     context('when the nodes don\'t exist', () => {
       const errMessage = 'The nodes don\'t exist.';
 
-      it('should throw an error with message "' + errMessage + '"', async () => {
+      it('should throw an error', async () => {
         try {
           await digger.findNodes({ 'name': 'Dan Dan' });
         } catch (err) {
@@ -191,7 +192,7 @@ describe('JSONDigger', () => {
     context('when users don\'t provide valid parameters', () => {
       const errMessage = 'Parameter conditions are invalid.';
 
-      it('should throw an error with message "' + errMessage + '"', async () => {
+      it('should throw an error when conditions are invalid', async () => {
         try {
           await digger.findNodes(null);
         } catch (err) {
@@ -230,7 +231,7 @@ describe('JSONDigger', () => {
     context('when the parent node doesn\'t exist', () => {
       const errMessage = 'The parent node doesn\'t exist.';
 
-      it('should throw an error with message "' + errMessage + '"', async () => {
+      it('should throw an error', async () => {
         try {
           await digger.findParent('1');
         } catch (err) {
@@ -246,7 +247,7 @@ describe('JSONDigger', () => {
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.findParent(null);
         } catch (err) {
@@ -292,19 +293,17 @@ describe('JSONDigger', () => {
     });
 
     context('when the sibling nodes don\'t exist', () => {
-      const errMessage = 'The sibling nodes don\'t exist.';
-
-      it('should throw an error with message "' + errMessage + '"', async () => {
+      it('should throw an error', async () => {
         try {
           await digger.findSiblings('1');
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal('The sibling nodes don\'t exist.');
         }
       });
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.findSiblings(null);
         } catch (err) {
@@ -353,19 +352,17 @@ describe('JSONDigger', () => {
     });
 
     context('when the ancestor nodes don\'t exist', () => {
-      const errMessage = 'The ancestor nodes don\'t exist.';
-
-      it('should throw an error with message "' + errMessage + '"', async () => {
+      it('should throw an error', async () => {
         try {
           await digger.findAncestors('1');
         } catch (err) {
-          err.message.should.equal(errMessage);
+          err.message.should.equal('The ancestor nodes don\'t exist.');
         }
       });
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.findAncestors(null);
         } catch (err) {
@@ -393,42 +390,42 @@ describe('JSONDigger', () => {
     context('when adding single node', () => {
       it('could add child node to root node', async () => {
         await digger.addChildren('1', { id: '11', name: 'Yu Jie' });
-        datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
+        datasource.children.some(item => item.name === 'Yu Jie').should.be.true;
       });
 
       it('could add child node to middle level node', async () => {
         await digger.addChildren('5', { id: '11', name: 'Dan Dan' });
-        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.children[1].children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
       });
 
       it('could add child node to leaf node', async () => {
         await digger.addChildren('10', { id: '11', name: 'Fei Xuan' });
-        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.children[0].children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
       it('could add child nodes to root node', async () => {
         await digger.addChildren('1', [{ id: '11', name: 'Yu Jie' }, { id: '12', name: 'Yu Li' }]);
-        datasource['children'].some(item => item.name === 'Yu Jie').should.be.true;
-        datasource['children'].some(item => item.name === 'Yu Li').should.be.true;
+        datasource.children.some(item => item.name === 'Yu Jie').should.be.true;
+        datasource.children.some(item => item.name === 'Yu Li').should.be.true;
       });
 
       it('could add child nodes to middle level node', async () => {
         await digger.addChildren('5', [{ id: '11', name: 'Dan Dan' }, { id: '12', name: 'Er Dan' }]);
-        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
-        datasource['children'][1]['children'][1]['children'].some(item => item.name === 'Er Dan').should.be.true;
+        datasource.children[1].children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.children[1].children[1].children.some(item => item.name === 'Er Dan').should.be.true;
       });
 
       it('could add child nodes to leaf node', async () => {
         await digger.addChildren('10', [{ id: '11', name: 'Fei Xuan' }, { id: '12', name: 'Er Xuan' }]);
-        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
-        datasource['children'][0]['children'][0]['children'].some(item => item.name === 'Er Xuan').should.be.true;
+        datasource.children[0].children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.children[0].children[0].children.some(item => item.name === 'Er Xuan').should.be.true;
       });
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.addChildren(null);
         } catch (err) {
@@ -448,7 +445,7 @@ describe('JSONDigger', () => {
         }
       });
 
-      it('should throw an error with message "' + dataErrMsg + '"', async () => {
+      it('should throw an error when data is invalid', async () => {
         try {
           await digger.addChildren('1');
         } catch (err) {
@@ -521,6 +518,14 @@ describe('JSONDigger', () => {
           err.message.should.equal(dataErrMsg);
         }
       });
+
+      it('should throw an error when parent node can\'t be found', async () => {
+        try {
+          await digger.addChildren('11', { id: '11', name: 'Yu Jie' });
+        } catch (err) {
+          err.message.should.equal('Failed to add child nodes.');
+        }
+      });
     });
   });
 
@@ -529,31 +534,31 @@ describe('JSONDigger', () => {
     context('when adding single node', () => {
       it('could add sibling node to middle level node', async () => {
         await digger.addSiblings('5', { id: '11', name: 'Dan Dan' });
-        datasource['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
       });
 
       it('could add sibling node to leaf node', async () => {
         await digger.addSiblings('10', { id: '11', name: 'Fei Xuan' });
-        datasource['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
       it('could add sibling nodes to middle level node', async () => {
         await digger.addSiblings('5', [{ id: '11', name: 'Dan Dan' }, { id: '12', name: 'Er Dan' }]);
-        datasource['children'][1]['children'].some(item => item.name === 'Dan Dan').should.be.true;
-        datasource['children'][1]['children'].some(item => item.name === 'Er Dan').should.be.true;
+        datasource.children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.children[1].children.some(item => item.name === 'Er Dan').should.be.true;
       });
 
       it('could add sibling nodes to leaf node', async () => {
         await digger.addSiblings('10', [{ id: '11', name: 'Fei Xuan' }, { id: '12', name: 'Er Xuan' }]);
-        datasource['children'][0]['children'].some(item => item.name === 'Fei Xuan').should.be.true;
-        datasource['children'][0]['children'].some(item => item.name === 'Er Xuan').should.be.true;
+        datasource.children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.children[0].children.some(item => item.name === 'Er Xuan').should.be.true;
       });
     });
 
     context('when users don\'t provide valid parameters', () => {
-      it('should throw an error with message "' + idErrMsg + '"', async () => {
+      it('should throw an error when id is invalid', async () => {
         try {
           await digger.addSiblings(null);
         } catch (err) {
@@ -573,7 +578,7 @@ describe('JSONDigger', () => {
         }
       });
 
-      it('should throw an error with message "' + dataErrMsg + '"', async () => {
+      it('should throw an error when data is invalid', async () => {
         try {
           await digger.addSiblings('1');
         } catch (err) {
@@ -642,6 +647,49 @@ describe('JSONDigger', () => {
 
         try {
           await digger.addSiblings('1', [{}]);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+      });
+    });
+  });
+
+  describe('#addRoot()', () => {
+
+    context('when adding root node with required properties', () => {
+      it('could add root node with new properties', () => {
+        digger.addRoot({ id: '11', name: 'Dan Dan' });
+        datasource.id.should.equal('11');
+        datasource.name.should.equal('Dan Dan');
+        datasource.children.length.should.equal(1);
+        expect(datasource.title).to.be.undefined;
+        expect(datasource.isShareholder).to.be.undefined;
+        expect(datasource.birthYear).to.be.undefined;
+      });
+
+      it('could add root node without children property', () => {
+        digger.addRoot({ id: '11', name: 'Dan Dan', 'children': [{ id: '12'}, { id: '13'}] });
+        datasource.children.length.should.equal(1);
+        datasource.children[0].name.should.equal('Lao Lao');
+      });
+    });
+
+    context('when users don\'t provide valid parameters', () => {
+      it('should throw an error', async () => {
+        try {
+          await digger.addRoot(null);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addRoot(undefined);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.addRoot('');
         } catch (err) {
           err.message.should.equal(dataErrMsg);
         }
