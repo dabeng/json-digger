@@ -284,13 +284,21 @@ export default class JSONDigger {
     });
   }
 
-  async addChildren (id, data) {
+  validateParams(id, data) {
     if (!id) {
       throw new Error('Parameter id is invalid.');
     }
-    if (!data || (data.constructor !== Object && data.constructor !== Array) || (data.constructor === Array && !data.every(item => item && item.constructor === Object))) {
+    if (!data
+      || (data.constructor !== Object && data.constructor !== Array)
+      || (data.constructor === Object && !Object.keys(data).length)
+      || (data.constructor === Array && !data.length)
+      || (data.constructor === Array && data.length && !data.every(item => item && item.constructor === Object && Object.keys(item).length))) {
       throw new Error('Parameter data is invalid.');
     }
+  }
+
+  async addChildren (id, data) {
+    this.validateParams(id, data);
     try {
       const parent = await this.findNodeById(id);
       if (data.constructor === Object) {
@@ -311,8 +319,18 @@ export default class JSONDigger {
     }
   }
 
-  addSiblings (id, data) {
-
+  async addSiblings (id, data) {
+    this.validateParams(id, data);
+    try {
+      const parent = await this.findParent(id);
+      if (data.constructor === Object) {
+        parent[this.children].push(data);
+      } else {
+        parent[this.children].push(...data);
+      }
+    } catch (err) {
+      throw new Error('Failed to add sibling nodes.');
+    }
   }
 
   addParent (id, data) {
