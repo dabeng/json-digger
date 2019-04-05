@@ -656,7 +656,7 @@ describe('JSONDigger', () => {
 
   describe('#addRoot()', () => {
 
-    context('when adding root node with required properties', () => {
+    context('when adding root node', () => {
       it('could add root node with new properties', () => {
         digger.addRoot({ id: '11', name: 'Dan Dan' });
         datasource.id.should.equal('11');
@@ -675,21 +675,143 @@ describe('JSONDigger', () => {
     });
 
     context('when users don\'t provide valid parameters', () => {
+      it('should throw an error', () => {
+        try {
+          digger.addRoot(null);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          digger.addRoot(undefined);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          digger.addRoot('');
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+      });
+    });
+  });
+
+  describe('#updateNode()', () => {
+
+    context('when updating root node', () => {
+      it('could update node with new properties', async () => {
+        await digger.updateNode({ id: '1', name: 'Lao Ye' });
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+    });
+
+    context('when users don\'t provide valid parameters', () => {
       it('should throw an error', async () => {
         try {
-          await digger.addRoot(null);
+          await digger.updateNode(null);
         } catch (err) {
           err.message.should.equal(dataErrMsg);
         }
 
         try {
-          await digger.addRoot(undefined);
+          await digger.updateNode(undefined);
         } catch (err) {
           err.message.should.equal(dataErrMsg);
         }
 
         try {
-          await digger.addRoot('');
+          await digger.updateNode('');
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.updateNode({});
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.updateNode({ 'name': 'Lao Ye' });
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+      });
+    });
+  });
+
+  describe('#removeNodes()', () => {
+
+    context('when removing single node', () => {
+      it('could remove root node', async () => {
+        await digger.removeNodes('1');
+        expect(datasource).to.be.undefined;
+      });
+
+      it('could remove middle level node', async () => {
+        await digger.removeNodes('4');
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+
+      it('could remove leaf node', async () => {
+        await digger.removeNodes('7');
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+    });
+
+    context('when removing multiple nodes', () => {
+      it('could update node with new properties', async () => {
+        await digger.removeNodes({ id: '1', name: 'Lao Ye' });
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+    });
+
+    context('when removing nodes based on conditions', () => {
+      it('could update node with new properties', async () => {
+        await digger.removeNodes({ id: '1', name: 'Lao Ye' });
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+    });
+
+    context('when users don\'t provide valid parameters', () => {
+      it('should throw an error', async () => {
+        try {
+          await digger.removeNodes(null);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.removeNodes(undefined);
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.removeNodes('');
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.removeNodes({});
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+
+        try {
+          await digger.removeNodes({ 'name': 'Lao Ye' });
         } catch (err) {
           err.message.should.equal(dataErrMsg);
         }

@@ -353,11 +353,20 @@ export default class JSONDigger {
     }
   }
 
-  removeNodes (ids) {
-
+  async updateNode (data) {
+    if (!data || data.constructor !== Object || !(data.constructor === Object && Object.keys(data).length && data[this.id])) {
+      throw new Error('Parameter data is invalid.');
+    }
+    try {
+      const node = await this.findNodeById(data[this.id]);
+      Object.assign(node, data);
+    } catch (err) {
+      throw new Error('Failed to update node.');
+    }
   }
 
-  editNode (id, data) {
+  removeNodes (param) {
+    if (param)
 
   }
 
