@@ -354,7 +354,10 @@ export default class JSONDigger {
   }
 
   async updateNode (data) {
-    if (!data || data.constructor !== Object || !(data.constructor === Object && Object.keys(data).length && data[this.id])) {
+    if (!data
+      || data.constructor !== Object
+      || (data.constructor === Object && !Object.keys(data).length)
+      || (data.constructor === Object && Object.keys(data).length && !data[this.id])) {
       throw new Error('Parameter data is invalid.');
     }
     try {
@@ -365,9 +368,40 @@ export default class JSONDigger {
     }
   }
 
-  removeNodes (param) {
-    if (param)
+  // remove single node based on id
+  async removeNode (id) {
+    const _this = this;
+    if (id === this.ds[this.id]) {
+      this.ds = undefined;
+      return;
+    }
+    const parent = await this.findParent(id);
+    const index = parent[this.children].map(function(node) { return node[_this.id]; }).indexOf(id);
+    parent[this.children].splice(index, 1);
+  }
 
+  // param could be single id, id array or conditions object
+  async removeNodes (param) {
+    const _this = this;
+    if (!param
+      || (param.constructor === Array && !param.length)
+      || (param.constructor === Object && !Object.keys(param).length)) {
+      throw new Error('Input parameter is invalid.');
+    }
+    // if passing in single id
+    if (param.constructor === String || param.constructor === Number) {
+      await this.removeNode(param);
+    } else if (param.constructor === Array) { // if passing in id array
+      for (let p of param) {
+        await this.removeNode(p);
+      }
+    } else { // if passing in conditions object
+      const nodes = await this.findNodes(param);
+      const ids = nodes.map(function(node) { return node[_this.id]; });
+      for (let p of param) {
+        await this.removeNode(p);
+      }
+    }
   }
 
 };
