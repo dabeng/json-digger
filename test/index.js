@@ -746,11 +746,6 @@ describe('JSONDigger', () => {
   describe('#removeNodes()', () => {
 
     context('when removing single node', () => {
-      it('could remove root node', async () => {
-        await digger.removeNodes('1');
-        expect(datasource.title).to.be.undefined;
-      });
-
       it('could remove middle level node', async () => {
         await digger.removeNodes('4');
         datasource.children[1].children.length.should.equal(1);
@@ -760,59 +755,102 @@ describe('JSONDigger', () => {
         await digger.removeNodes('7');
         datasource.children[1].children[1].children.length.should.equal(1);
       });
+
+      it('could not remove root node', async () => {
+        try {
+          await digger.removeNodes('1');
+        } catch (err) {
+          err.message.should.equal('Failed to remove nodes.');
+        }
+      });
     });
 
-    /*context('when removing multiple nodes', () => {
-      it('could update node with new properties', async () => {
-        await digger.removeNodes({ id: '1', name: 'Lao Ye' });
-        datasource.name.should.equal('Lao Ye');
-        datasource.title.should.equal('general manager');
-        datasource.children.length.should.equal(4);
+    context('when removing multiple nodes', () => {
+      it('could remove nodes which are not related', async () => {
+        await digger.removeNodes(['4', '7']);
+        datasource.children[1].children.length.should.equal(1);
+        datasource.children[1].children[0].children.length.should.equal(1);
+      });
+
+      it('could remove nodes which are peer nodes', async () => {
+        await digger.removeNodes(['2', '3']);
+        datasource.children.length.should.equal(2);
       });
     });
 
     context('when removing nodes based on conditions', () => {
-      it('could update node with new properties', async () => {
-        await digger.removeNodes({ id: '1', name: 'Lao Ye' });
-        datasource.name.should.equal('Lao Ye');
-        datasource.title.should.equal('general manager');
-        datasource.children.length.should.equal(4);
+      it('could remove nodes which are under the same query conditions', async () => {
+        await digger.removeNodes({ title: 'principle engineer' });
+        datasource.children[0].children.length.should.equal(0);
+        datasource.children[1].children.length.should.equal(1);
+      });
+
+      it('could remove one node with id query conditions', async () => {
+        await digger.removeNodes({ id: '5' });
+        datasource.children[1].children.length.should.equal(1);
       });
     });
 
     context('when users don\'t provide valid parameters', () => {
+      const inputParamErrMsg = 'Input parameter is invalid.';
+      const errMessage = 'Failed to remove nodes.';
+
       it('should throw an error', async () => {
         try {
           await digger.removeNodes(null);
         } catch (err) {
-          err.message.should.equal(dataErrMsg);
+          err.message.should.equal(inputParamErrMsg);
         }
 
         try {
           await digger.removeNodes(undefined);
         } catch (err) {
-          err.message.should.equal(dataErrMsg);
+          err.message.should.equal(inputParamErrMsg);
         }
 
         try {
           await digger.removeNodes('');
         } catch (err) {
-          err.message.should.equal(dataErrMsg);
+          err.message.should.equal(inputParamErrMsg);
         }
 
         try {
           await digger.removeNodes({});
         } catch (err) {
-          err.message.should.equal(dataErrMsg);
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.removeNodes('1');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.removeNodes('11');
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.removeNodes(['11']);
+        } catch (err) {
+          err.message.should.equal(errMessage);
+        }
+
+        try {
+          await digger.removeNodes({ id: '11' });
+        } catch (err) {
+          err.message.should.equal(errMessage);
         }
 
         try {
           await digger.removeNodes({ 'name': 'Lao Ye' });
         } catch (err) {
-          err.message.should.equal(dataErrMsg);
+          err.message.should.equal(errMessage);
         }
       });
-    });*/
+    });
   });
 
 });

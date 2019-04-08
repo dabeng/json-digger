@@ -20,40 +20,6 @@ export default class JSONDigger {
     }
   }
 
-  // findNodeById (obj, id) {
-  //   const _this = this;
-  //   this.countNodes(obj);
-  //   return new Promise((resolve, reject) => {
-  //     if (!obj || !Object.keys(obj).length || !id) {
-  //       reject(new Error('One or more input parameters are invalid'));
-  //     }
-  //     function findNodeById (obj, id, callback) {
-  //       if (obj[_this.id] === id) {
-  //         _this.count = 0;
-  //         callback(null, obj);
-  //       } else {
-  //         if (_this.count === 1) {
-  //           _this.count = 0;
-  //           callback('the node doesn\'t exist', null);
-  //         }
-  //         _this.count--;
-  //         if (obj[_this.children]) {
-  //           obj[_this.children].forEach(node => {
-  //             findNodeById(node, id, callback);
-  //           });
-  //         }
-  //       }
-  //     }
-  //     findNodeById(obj, id, (msg, node) => {
-  //       if (msg) {
-  //         reject(new Error(msg));
-  //       } else {
-  //         resolve(node);
-  //       }
-  //     });
-  //   });
-  // }
-
   findNodeById (id) {
     const _this = this;
     this.countNodes(this.ds);
@@ -372,12 +338,12 @@ export default class JSONDigger {
   async removeNode (id) {
     const _this = this;
     if (id === this.ds[this.id]) {
-      this.ds = undefined;
-      return;
+      throw new Error('Input parameter is invalid.');
     }
     const parent = await this.findParent(id);
-    const index = parent[this.children].map(function(node) { return node[_this.id]; }).indexOf(id);
+    const index = parent[this.children].map(node => node[_this.id]).indexOf(id);
     parent[this.children].splice(index, 1);
+    this.count = 0;
   }
 
   // param could be single id, id array or conditions object
@@ -388,19 +354,23 @@ export default class JSONDigger {
       || (param.constructor === Object && !Object.keys(param).length)) {
       throw new Error('Input parameter is invalid.');
     }
-    // if passing in single id
-    if (param.constructor === String || param.constructor === Number) {
-      await this.removeNode(param);
-    } else if (param.constructor === Array) { // if passing in id array
-      for (let p of param) {
-        await this.removeNode(p);
+    try {
+      // if passing in single id
+      if (param.constructor === String || param.constructor === Number) {
+        await this.removeNode(param);
+      } else if (param.constructor === Array) { // if passing in id array
+        for (const p of param) {
+          await this.removeNode(p);
+        }
+      } else { // if passing in conditions object
+        const nodes = await this.findNodes(param);
+        const ids = nodes.map(node => node[_this.id]);
+        for (const p of ids) {
+          await this.removeNode(p);
+        }
       }
-    } else { // if passing in conditions object
-      const nodes = await this.findNodes(param);
-      const ids = nodes.map(function(node) { return node[_this.id]; });
-      for (let p of param) {
-        await this.removeNode(p);
-      }
+    } catch (err) {
+      throw new Error('Failed to remove nodes.');
     }
   }
 
