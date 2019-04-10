@@ -1,7 +1,6 @@
 import { should, expect } from 'chai';
 import JSONDigger from '../src/index';
 should();
-// expect();
 
 describe('JSONDigger', () => {
 
