@@ -28,6 +28,9 @@ export default class JSONDigger {
         return reject(new Error('Parameter id is invalid.'));
       }
       function findNodeById (obj, id, callback) {
+        if (!_this.count) {
+          return;
+        }
         if (obj[_this.id] === id) {
           _this.count = 0;
           callback(null, obj);
@@ -138,6 +141,9 @@ export default class JSONDigger {
       }
       let nodes = [];
       function findNodes(obj, conditions, callback) {
+        if (!_this.count) {
+          return;
+        }
         if (_this.matchConditions(obj, conditions)) {
           nodes.push(obj);
           if (_this.count === 1) {
