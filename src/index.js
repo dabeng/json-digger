@@ -340,6 +340,22 @@ export default class JSONDigger {
     }
   }
 
+  async updateNodes (ids, data) {
+    const _this = this;
+    if (!ids
+      || (ids.constructor === Array && !param.length)) {
+      throw new Error('Input parameter is invalid.');
+    }
+    try {
+      for (const id of ids) {
+        data[_this.id] = id; 
+        await this.updateNode(data);
+      }
+    } catch (err) {
+      throw new Error('Failed to update nodes.');
+    }
+  }
+
   // remove single node based on id
   async removeNode (id) {
     const _this = this;
