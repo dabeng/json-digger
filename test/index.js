@@ -742,6 +742,18 @@ describe('JSONDigger', () => {
     });
   });
 
+    describe('#updateNodes()', () => {
+
+    context('when updating root node', () => {
+      it('could update node with new properties', async () => {
+        await digger.updateNodes(['1'], { name: 'Lao Ye' });
+        datasource.name.should.equal('Lao Ye');
+        datasource.title.should.equal('general manager');
+        datasource.children.length.should.equal(4);
+      });
+    });
+  });
+
   describe('#removeNodes()', () => {
 
     context('when removing single node', () => {
