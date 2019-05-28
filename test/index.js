@@ -742,7 +742,7 @@ describe('JSONDigger', () => {
     });
   });
 
-    describe('#updateNodes()', () => {
+  describe('#updateNodes()', () => {
 
     context('when updating root node', () => {
       it('could update node with new properties', async () => {
@@ -752,6 +752,81 @@ describe('JSONDigger', () => {
         datasource.children.length.should.equal(4);
       });
     });
+
+    context('when updating leaf nodes', () => {
+      it('could update multiple leaf nodes with new properties', async () => {
+        await digger.updateNodes(['6', '7', '10'], { title: 'senior engineer' });
+        const node6 = await digger.findNodeById('6');
+        node6.title.should.equal('senior engineer');
+        const node7 = await digger.findNodeById('7');
+        node7.title.should.equal('senior engineer');
+        const node10 = await digger.findNodeById('10');
+        node10.title.should.equal('senior engineer');
+      });
+    });
+
+    context('when updating common nodes', () => {
+      it('could update multiple common nodes with new properties', async () => {
+        await digger.updateNodes(['4', '5'], { title: 'chief scientist' });
+        const node4 = await digger.findNodeById('4');
+        node4.title.should.equal('chief scientist');
+        const node5 = await digger.findNodeById('5');
+        node5.title.should.equal('chief scientist');
+
+      });
+    });
+
+    context('when users don\'t provide valid parameters', () => {
+      const inputParamErrMsg = 'Input parameter is invalid.';
+      const errMessage = 'Failed to remove nodes.';
+      const dataErrMsg = 'Parameter data is invalid.';
+
+      it('should throw an error', async () => {
+        try {
+          await digger.updateNodes(null);
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes(undefined);
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes('');
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes(['1']);
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes(['1'], null);
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes(['1'], undefined);
+        } catch (err) {
+          err.message.should.equal(inputParamErrMsg);
+        }
+
+        try {
+          await digger.updateNodes(['1'], {});
+        } catch (err) {
+          err.message.should.equal(dataErrMsg);
+        }
+      });
+
+    });
+
   });
 
   describe('#removeNodes()', () => {
