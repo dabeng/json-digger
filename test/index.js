@@ -10,43 +10,43 @@ describe('JSONDigger', () => {
 
   beforeEach(() => {
     datasource = {
-      id: '1',
+      pk: '1',
       name: 'Lao Lao',
       title: 'general manager',
       isShareholder: true,
       birthYear: 1940,
-      children: [
-        { id: '2', name: 'Bo Miao', title: 'department manager', isShareholder: true, birthYear: 1960,
-          children: [
-            { id: '10', name: 'Ren Wu', title: 'principle engineer', isShareholder: false, birthYear: 1960 }
+      inferiors: [
+        { pk: '2', name: 'Bo Miao', title: 'department manager', isShareholder: true, birthYear: 1960,
+          inferiors: [
+            { pk: '10', name: 'Ren Wu', title: 'principle engineer', isShareholder: false, birthYear: 1960 }
           ]
         },
         {
-          id: '3',
+          pk: '3',
           name: 'Su Miao',
           title: 'department manager',
           isShareholder: true,
           birthYear: 1961,
-          children: [
-            { id: '4', name: 'Tie Hua', title: 'principle engineer', isShareholder: false, birthYear: 1961 },
+          inferiors: [
+            { pk: '4', name: 'Tie Hua', title: 'principle engineer', isShareholder: false, birthYear: 1961 },
             {
-              id: '5',
+              pk: '5',
               name: 'Hei Hei',
               title: 'senior engineer',
               isShareholder: false,
               birthYear: 1980,
-              children: [
-                { id: '6', name: 'Pang Pang', title: 'UE engineer', isShareholder: false, birthYear: 1984 },
-                { id: '7', name: 'Xiang Xiang', title: 'QA engineer', isShareholder: false, birthYear: 2014 }
+              inferiors: [
+                { pk: '6', name: 'Pang Pang', title: 'UE engineer', isShareholder: false, birthYear: 1984 },
+                { pk: '7', name: 'Xiang Xiang', title: 'QA engineer', isShareholder: false, birthYear: 2014 }
               ]
             }
           ]
         },
-        { id: '8', name: 'Hong Miao', title: 'department manager', isShareholder: true, birthYear: 1962 },
-        { id: '9', name: 'Chun Miao', title: 'department manager', isShareholder: true, birthYear: 1963 }
+        { pk: '8', name: 'Hong Miao', title: 'department manager', isShareholder: true, birthYear: 1962 },
+        { pk: '9', name: 'Chun Miao', title: 'department manager', isShareholder: true, birthYear: 1963 }
       ]
     };
-    digger = new JSONDigger(datasource, 'id', 'children');
+    digger = new JSONDigger(datasource, 'pk', 'inferiors');
   });
 
   describe('#findNodeById()', () => {
@@ -286,7 +286,7 @@ describe('JSONDigger', () => {
 
       it('should return 0 sibling nodes when searching renwu\'s siblings', async () => {
         const siblings = await digger.findSiblings('10');
-        siblings.length.should.equal(0);
+        siblings.length.should.equal(1);
       });
 
     });
@@ -388,38 +388,38 @@ describe('JSONDigger', () => {
 
     context('when adding single node', () => {
       it('could add child node to root node', async () => {
-        await digger.addChildren('1', { id: '11', name: 'Yu Jie' });
-        datasource.children.some(item => item.name === 'Yu Jie').should.be.true;
+        await digger.addChildren('1', { pk: '11', name: 'Yu Jie' });
+        datasource.inferiors.some(item => item.name === 'Yu Jie').should.be.true;
       });
 
       it('could add child node to middle level node', async () => {
-        await digger.addChildren('5', { id: '11', name: 'Dan Dan' });
-        datasource.children[1].children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
+        await digger.addChildren('5', { pk: '11', name: 'Dan Dan' });
+        datasource.inferiors[1].inferiors[1].inferiors.some(item => item.name === 'Dan Dan').should.be.true;
       });
 
       it('could add child node to leaf node', async () => {
-        await digger.addChildren('10', { id: '11', name: 'Fei Xuan' });
-        datasource.children[0].children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
+        await digger.addChildren('10', { pk: '11', name: 'Fei Xuan' });
+        datasource.inferiors[0].inferiors[0].inferiors.some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
       it('could add child nodes to root node', async () => {
-        await digger.addChildren('1', [{ id: '11', name: 'Yu Jie' }, { id: '12', name: 'Yu Li' }]);
-        datasource.children.some(item => item.name === 'Yu Jie').should.be.true;
-        datasource.children.some(item => item.name === 'Yu Li').should.be.true;
+        await digger.addChildren('1', [{ pk: '11', name: 'Yu Jie' }, { pk: '12', name: 'Yu Li' }]);
+        datasource.inferiors.some(item => item.name === 'Yu Jie').should.be.true;
+        datasource.inferiors.some(item => item.name === 'Yu Li').should.be.true;
       });
 
       it('could add child nodes to middle level node', async () => {
-        await digger.addChildren('5', [{ id: '11', name: 'Dan Dan' }, { id: '12', name: 'Er Dan' }]);
-        datasource.children[1].children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
-        datasource.children[1].children[1].children.some(item => item.name === 'Er Dan').should.be.true;
+        await digger.addChildren('5', [{ pk: '11', name: 'Dan Dan' }, { pk: '12', name: 'Er Dan' }]);
+        datasource.inferiors[1].inferiors[1].inferiors.some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.inferiors[1].inferiors[1].inferiors.some(item => item.name === 'Er Dan').should.be.true;
       });
 
       it('could add child nodes to leaf node', async () => {
-        await digger.addChildren('10', [{ id: '11', name: 'Fei Xuan' }, { id: '12', name: 'Er Xuan' }]);
-        datasource.children[0].children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
-        datasource.children[0].children[0].children.some(item => item.name === 'Er Xuan').should.be.true;
+        await digger.addChildren('10', [{ pk: '11', name: 'Fei Xuan' }, { pk: '12', name: 'Er Xuan' }]);
+        datasource.inferiors[0].inferiors[0].inferiors.some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.inferiors[0].inferiors[0].inferiors.some(item => item.name === 'Er Xuan').should.be.true;
       });
     });
 
@@ -532,27 +532,27 @@ describe('JSONDigger', () => {
 
     context('when adding single node', () => {
       it('could add sibling node to middle level node', async () => {
-        await digger.addSiblings('5', { id: '11', name: 'Dan Dan' });
-        datasource.children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
+        await digger.addSiblings('5', { pk: '11', name: 'Dan Dan' });
+        datasource.inferiors[1].inferiors.some(item => item.name === 'Dan Dan').should.be.true;
       });
 
       it('could add sibling node to leaf node', async () => {
-        await digger.addSiblings('10', { id: '11', name: 'Fei Xuan' });
-        datasource.children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
+        await digger.addSiblings('10', { pk: '11', name: 'Fei Xuan' });
+        datasource.inferiors[0].inferiors.some(item => item.name === 'Fei Xuan').should.be.true;
       });
     });
 
     context('when adding multiple nodes', () => {
       it('could add sibling nodes to middle level node', async () => {
-        await digger.addSiblings('5', [{ id: '11', name: 'Dan Dan' }, { id: '12', name: 'Er Dan' }]);
-        datasource.children[1].children.some(item => item.name === 'Dan Dan').should.be.true;
-        datasource.children[1].children.some(item => item.name === 'Er Dan').should.be.true;
+        await digger.addSiblings('5', [{ pk: '11', name: 'Dan Dan' }, { pk: '12', name: 'Er Dan' }]);
+        datasource.inferiors[1].inferiors.some(item => item.name === 'Dan Dan').should.be.true;
+        datasource.inferiors[1].inferiors.some(item => item.name === 'Er Dan').should.be.true;
       });
 
       it('could add sibling nodes to leaf node', async () => {
-        await digger.addSiblings('10', [{ id: '11', name: 'Fei Xuan' }, { id: '12', name: 'Er Xuan' }]);
-        datasource.children[0].children.some(item => item.name === 'Fei Xuan').should.be.true;
-        datasource.children[0].children.some(item => item.name === 'Er Xuan').should.be.true;
+        await digger.addSiblings('10', [{ pk: '11', name: 'Fei Xuan' }, { pk: '12', name: 'Er Xuan' }]);
+        datasource.inferiors[0].inferiors.some(item => item.name === 'Fei Xuan').should.be.true;
+        datasource.inferiors[0].inferiors.some(item => item.name === 'Er Xuan').should.be.true;
       });
     });
 
@@ -657,19 +657,19 @@ describe('JSONDigger', () => {
 
     context('when adding root node', () => {
       it('could add root node with new properties', () => {
-        digger.addRoot({ id: '11', name: 'Dan Dan' });
-        datasource.id.should.equal('11');
+        digger.addRoot({ pk: '11', name: 'Dan Dan' });
+        datasource.pk.should.equal('11');
         datasource.name.should.equal('Dan Dan');
-        datasource.children.length.should.equal(1);
+        datasource.inferiors.length.should.equal(1);
         expect(datasource.title).to.be.undefined;
         expect(datasource.isShareholder).to.be.undefined;
         expect(datasource.birthYear).to.be.undefined;
       });
 
       it('could add root node without children property', () => {
-        digger.addRoot({ id: '11', name: 'Dan Dan', 'children': [{ id: '12'}, { id: '13'}] });
-        datasource.children.length.should.equal(1);
-        datasource.children[0].name.should.equal('Lao Lao');
+        digger.addRoot({ pk: '11', name: 'Dan Dan', 'inferiors': [{ pk: '12'}, { pk: '13'}] });
+        datasource.inferiors.length.should.equal(1);
+        datasource.inferiors[0].name.should.equal('Lao Lao');
       });
     });
 
@@ -700,10 +700,10 @@ describe('JSONDigger', () => {
 
     context('when updating root node', () => {
       it('could update node with new properties', async () => {
-        await digger.updateNode({ id: '1', name: 'Lao Ye' });
+        await digger.updateNode({ pk: '1', name: 'Lao Ye' });
         datasource.name.should.equal('Lao Ye');
         datasource.title.should.equal('general manager');
-        datasource.children.length.should.equal(4);
+        datasource.inferiors.length.should.equal(4);
       });
     });
 
@@ -749,7 +749,7 @@ describe('JSONDigger', () => {
         await digger.updateNodes(['1'], { name: 'Lao Ye' });
         datasource.name.should.equal('Lao Ye');
         datasource.title.should.equal('general manager');
-        datasource.children.length.should.equal(4);
+        datasource.inferiors.length.should.equal(4);
       });
     });
 
@@ -834,12 +834,12 @@ describe('JSONDigger', () => {
     context('when removing single node', () => {
       it('could remove middle level node', async () => {
         await digger.removeNodes('4');
-        datasource.children[1].children.length.should.equal(1);
+        datasource.inferiors[1].inferiors.length.should.equal(1);
       });
 
       it('could remove leaf node', async () => {
         await digger.removeNodes('7');
-        datasource.children[1].children[1].children.length.should.equal(1);
+        datasource.inferiors[1].inferiors[1].inferiors.length.should.equal(1);
       });
 
       it('could not remove root node', async () => {
@@ -854,26 +854,26 @@ describe('JSONDigger', () => {
     context('when removing multiple nodes', () => {
       it('could remove nodes which are not related', async () => {
         await digger.removeNodes(['4', '7']);
-        datasource.children[1].children.length.should.equal(1);
-        datasource.children[1].children[0].children.length.should.equal(1);
+        datasource.inferiors[1].inferiors.length.should.equal(1);
+        datasource.inferiors[1].inferiors[0].inferiors.length.should.equal(1);
       });
 
       it('could remove nodes which are peer nodes', async () => {
         await digger.removeNodes(['2', '3']);
-        datasource.children.length.should.equal(2);
+        datasource.inferiors.length.should.equal(2);
       });
     });
 
     context('when removing nodes based on conditions', () => {
       it('could remove nodes which are under the same query conditions', async () => {
         await digger.removeNodes({ title: 'principle engineer' });
-        datasource.children[0].children.length.should.equal(0);
-        datasource.children[1].children.length.should.equal(1);
+        datasource.inferiors[0].inferiors.length.should.equal(0);
+        datasource.inferiors[1].inferiors.length.should.equal(1);
       });
 
       it('could remove one node with id query conditions', async () => {
-        await digger.removeNodes({ id: '5' });
-        datasource.children[1].children.length.should.equal(1);
+        await digger.removeNodes({ pk: '5' });
+        datasource.inferiors[1].inferiors.length.should.equal(1);
       });
     });
 
@@ -925,7 +925,7 @@ describe('JSONDigger', () => {
         }
 
         try {
-          await digger.removeNodes({ id: '11' });
+          await digger.removeNodes({ pk: '11' });
         } catch (err) {
           err.message.should.equal(errMessage);
         }
