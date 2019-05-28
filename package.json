@@ -1,11 +1,12 @@
 {
   "name": "json-digger",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
   "scripts": {
     "test": "mocha --require @babel/register",
-    "debug-test": "mocha --inspect-brk --require babel-core/register"
+    "debug-test": "mocha --inspect-brk --require babel-core/register",
+    "build": "babel src --out-dir ./dist --source-maps"
   },
   "repository": {
     "type": "git",
