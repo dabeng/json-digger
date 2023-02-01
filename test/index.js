@@ -1,6 +1,7 @@
-import { should, expect } from 'chai';
-import JSONDigger from '../src/index';
-should();
+const chai = require('chai')
+const expect = chai.expect
+const should = chai.should();
+const JSONDigger = require('../src/index');
 
 describe('JSONDigger', () => {
 

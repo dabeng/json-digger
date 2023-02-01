@@ -1,4 +1,4 @@
-export default class JSONDigger {
+class JSONDigger {
   constructor(datasource, idProp, childrenProp) {
     this.ds = datasource;
     this.id = idProp;
@@ -404,3 +404,5 @@ export default class JSONDigger {
   }
 
 };
+
+module.exports = JSONDigger;

@@ -5,7 +5,7 @@
   "main": "dist/json-digger.js",
   "module": "src/index.js",
   "scripts": {
-    "test": "mocha --require @babel/register",
+    "test": "mocha",
     "build": "webpack"
   },
   "repository": {
