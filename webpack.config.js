@@ -7,7 +7,7 @@ module.exports = {
     filename: 'json-digger.js',
     globalObject: 'this',
     library: {
-      name: 'JsonDigger',
+      name: 'JSONDigger',
       type: 'umd',
     },
   },
