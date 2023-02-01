@@ -286,7 +286,7 @@ describe('JSONDigger', () => {
 
       it('should return 0 sibling nodes when searching renwu\'s siblings', async () => {
         const siblings = await digger.findSiblings('10');
-        siblings.length.should.equal(1);
+        siblings.length.should.equal(0);
       });
 
     });
