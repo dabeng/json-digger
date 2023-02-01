@@ -829,6 +829,23 @@ describe('JSONDigger', () => {
 
   });
 
+  describe('#removeNode()', () => {
+    context('when removing multiple nodes one by one', () => {
+      it('could remove nodes which are not related', async () => {
+        await digger.removeNode('4');
+        await digger.removeNode('7');
+        datasource.inferiors[1].inferiors.length.should.equal(1);
+        datasource.inferiors[1].inferiors[0].inferiors.length.should.equal(1);
+      });
+
+      it('could remove nodes which are peer nodes one by one', async () => {
+        await digger.removeNode('2');
+        await digger.removeNode('3');
+        datasource.inferiors.length.should.equal(2);
+      });
+    });
+  });
+
   describe('#removeNodes()', () => {
 
     context('when removing single node', () => {

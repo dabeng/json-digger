@@ -22,6 +22,7 @@ export default class JSONDigger {
 
   findNodeById (id) {
     const _this = this;
+    // this.count = 0;
     this.countNodes(this.ds);
     return new Promise((resolve, reject) => {
       if (!id) {
@@ -363,10 +364,15 @@ export default class JSONDigger {
     if (id === this.ds[this.id]) {
       throw new Error('Input parameter is invalid.');
     }
-    const parent = await this.findParent(id);
-    const index = parent[this.children].map(node => node[_this.id]).indexOf(id);
-    parent[this.children].splice(index, 1);
-    this.count = 0;
+    try {
+      const parent = await this.findParent(id);
+      const index = parent[this.children].map(node => node[_this.id]).indexOf(id);
+      const removed = parent[this.children].splice(index, 1);
+      this.count = 0;
+      return parent;
+    } catch (err) {
+      throw new Error('Failed to remove node.');
+    }
   }
 
   // param could be single id, id array or conditions object
