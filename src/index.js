@@ -1,3 +1,5 @@
+const { node } = require("webpack");
+
 class JSONDigger {
   constructor(datasource, idProp, childrenProp) {
     this.ds = datasource;
@@ -20,42 +22,37 @@ class JSONDigger {
     }
   }
 
+  /*
+  * This method returns the first node in the JSON object that satisfies the provided id. 
+  * If no node satisfies the provide id, null is returned.
+  */
   findNodeById (id) {
     const _this = this;
-    // this.count = 0;
-    this.countNodes(this.ds);
-    return new Promise((resolve, reject) => {
-      if (!id) {
-        return reject(new Error('Parameter id is invalid.'));
-      }
-      function findNodeById (obj, id, callback) {
-        if (!_this.count) {
-          return;
-        }
-        if (obj[_this.id] === id) {
-          _this.count = 0;
-          callback(null, obj);
-        } else {
-          if (_this.count === 1) {
-            _this.count = 0;
-            callback('The node doesn\'t exist.', null);
-          }
-          _this.count--;
-          if (obj[_this.children]) {
-            obj[_this.children].forEach(node => {
-              findNodeById(node, id, callback);
-            });
+
+    if (!id) {
+      return null;
+    }
+
+    if (this.ds[_this.id] === id) {
+      return this.ds;
+    }
+
+    function findNodeById (nodes, id) {
+      for (const node of nodes) {
+        if (node[_this.id] === id) {
+          return node;
+        } 
+        if (node[_this.children]) {
+          const foundNode = findNodeById(node[_this.children], id);
+          if (foundNode) {
+            return foundNode;
           }
         }
       }
-      findNodeById(this.ds, id, (msg, node) => {
-        if (msg) {
-          reject(new Error(msg));
-        } else {
-          resolve(node);
-        }
-      });
-    });
+      return null;
+    }
+
+    return findNodeById(this.ds[this.children], id);
   }
 
   matchConditions (obj, conditions) {
@@ -120,286 +117,278 @@ class JSONDigger {
     return flag;
   }
 
-  async findChildren (id) {
+  /*
+  * This method returns the first node in the JSON object that satisfies the conditions. 
+  * If no node satisfies the conditionas, null is returned.
+  */
+  findOneNode (conditions) {
     const _this = this;
-    if (!id) {
-      throw new Error('Parameter id is invalid.');
+
+    if (!conditions || !Object.keys(conditions).length) {
+      return null;
     }
-    try {
-      const parent = await this.findParent(id);
-      return parent[this.children];
-    } catch (err) {
-      throw new Error('The child nodes don\'t exist.');
+
+    if (this.matchConditions(this.ds, conditions)) {
+      return this.ds;
     }
+
+    function findOneNode (nodes, conditions) {
+      for (const node of nodes) {
+        if (_this.matchConditions(node, conditions)) {
+          return node;
+        } 
+        if (node[_this.children]) {
+          const foundNode = findOneNode(node[_this.children], conditions);
+          if (foundNode !== null) {
+            return foundNode;
+          }
+        }
+      }
+      return null;
+    }
+
+    return findOneNode(this.ds[this.children], conditions);
   }
 
   findNodes (conditions) {
     const _this = this;
-    this.countNodes(this.ds);
-    return new Promise(async(resolve, reject) => {
-      if (!conditions || !Object.keys(conditions).length) {
-        return reject(new Error('Parameter conditions are invalid.'));
+
+    if (!conditions || !Object.keys(conditions).length) {
+      return [];
+    }
+
+    let nodes = [];
+
+    function findNodes(obj) {
+      if (_this.matchConditions(obj, conditions)) {
+        nodes.push(obj);
       }
-      let nodes = [];
-      function findNodes(obj, conditions, callback) {
-        if (!_this.count) {
-          return;
-        }
-        if (_this.matchConditions(obj, conditions)) {
-          nodes.push(obj);
-          if (_this.count === 1) {
-            _this.count = 0;
-            callback(!nodes.length ? 'The nodes don\'t exist.' : null, nodes.slice(0));
-          }
-        } else {
-          if (_this.count === 1) {
-            _this.count = 0;
-            callback(!nodes.length ? 'The nodes don\'t exist.' : null, nodes.slice(0));
-          }
-        }
-        _this.count--;
-        if (obj[_this.children]) {
-          obj[_this.children].forEach(child => {
-            findNodes(child, conditions, callback);
-          });
+      if (obj[_this.children]) {
+        for (const node of obj[_this.children]) {
+          findNodes(node);
         }
       }
-      findNodes(this.ds, conditions, (msg, nodes) => {
-        if (msg) {
-          reject(new Error(msg));
-        } else {
-          resolve(nodes);
-        }
-      });
-    });
+    }
+
+    findNodes(this.ds);
+
+    return nodes;
   }
 
   findParent (id) {
     const _this = this;
-    this.countNodes(this.ds);
-    return new Promise((resolve, reject) => {
-      if (!id) {
-        return reject(new Error('Parameter id is invalid.'));
-      }
-      function findParent (obj, id, callback)  {
-        if (_this.count === 1) {
-          _this.count = 0;
-          callback('The parent node doesn\'t exist.', null);
-        } else {
-          _this.count--;
-          if (typeof obj[_this.children] !== 'undefined') {
-            obj[_this.children].forEach(function(child) {
-              if (child[_this.id] === id) {
-                _this.count = 0;
-                callback(null, obj);
-              }
-            });
-            obj[_this.children].forEach(function(child) {
-              findParent(child, id, callback);
-            });
+
+    if (!id) {
+      return null;
+    }
+
+    if (this.ds[_this.children].some(node => node[_this.id] === id)) {
+      return this.ds;
+    }
+
+    function findParent (nodes, id) {
+      for (const node of nodes) {
+        if (node[_this.children] && node[_this.children].some(node => node[_this.id] === id)) {
+          return node;
+        } 
+        if (node[_this.children]) {
+          const foundNode = findParent(node[_this.children], id);
+          if (foundNode) {
+            return foundNode;
           }
         }
       }
-      findParent(this.ds, id, (msg, parent) => {
-        if (msg) {
-          reject(new Error(msg));
-        } else {
-          resolve(parent);
-        }
-      });
-    });
+      return null;
+    }
+
+    return findParent(this.ds[this.children], id);
   }
 
-  async findSiblings (id) {
+  findSiblings (id) {
     const _this = this;
-    if (!id) {
-      throw new Error('Parameter id is invalid.');
+    if (!id || this.ds[this.id] === id) {
+      return [];
     }
-    try {
-      const parent = await this.findParent(id);
-      return parent[this.children].filter(child => {
-        return child[_this.id] !== id;
-      });
-    } catch (err) {
-      throw new Error('The sibling nodes don\'t exist.');
-    }
+
+    const parent = this.findParent(id);
+    return parent[_this.children].filter(node => node[_this.id] !== id);
   }
 
   findAncestors (id) {
     const _this = this;
-    return new Promise(async(resolve, reject) => {
-      if (!id) {
-        return reject(new Error('Parameter id is invalid.'));
+
+    if (!id || id === _this.ds[_this.id]) {
+      return [];
+    }
+
+    const nodes = [];
+    function findAncestors (id) {
+      const parent = _this.findParent(id);
+      if (parent) {
+        nodes.push(parent);
+        return findAncestors(parent[_this.id]);
+      } else {
+        return nodes.slice(0);
       }
-      let  nodes = [];
-      async function findAncestors (id) {
-        try {
-          if (id === _this.ds[_this.id]) {
-            if (!nodes.length) {
-              throw new Error('The ancestor nodes don\'t exist.');
-            }
-            return nodes.slice(0);
-          } else {
-            const parent = await _this.findParent(id);
-            nodes.push(parent);
-            return findAncestors(parent[_this.id]);
-          }
-        } catch (err) {
-          throw new Error('The ancestor nodes don\'t exist.');
-        }
-      }
-      try {
-        const ancestors = await findAncestors(id);
-        resolve(ancestors);
-      } catch (err) {
-        reject(err);
-      }
-    });
+    }
+
+    return findAncestors(id);   
   }
 
   // validate the input parameters id and data(could be oject or array)
   validateParams(id, data) {
-    if (!id) {
-      throw new Error('Parameter id is invalid.');
-    }
-    if (!data
+    if (!id
+      || !data
       || (data.constructor !== Object && data.constructor !== Array)
       || (data.constructor === Object && !Object.keys(data).length)
       || (data.constructor === Array && !data.length)
-      || (data.constructor === Array && data.length && !data.every(item => item && item.constructor === Object && Object.keys(item).length))) {
-      throw new Error('Parameter data is invalid.');
+      || (data.constructor === Array
+        && data.length 
+        && !data.every(item => item && item.constructor === Object && Object.keys(item).length))){
+      return false;
     }
+    return true;
   }
 
-  async addChildren (id, data) {
-    this.validateParams(id, data);
-    try {
-      const parent = await this.findNodeById(id);
-      if (data.constructor === Object) {
-        if (parent[this.children]) {
-          parent[this.children].push(data);
-        } else {
-          parent[this.children] = [data];
-        }
-      } else {
-        if (parent[this.children]) {
-          parent[this.children].push(...data);
-        } else {
-          parent[this.children] = data;
-        }
-      }
-    } catch (err) {
-      throw new Error('Failed to add child nodes.');
+  addChildren (id, data) {
+    if (!this.validateParams(id, data)) {
+      return false;
     }
-  }
 
-  async addSiblings (id, data) {
-    this.validateParams(id, data);
-    try {
-      const parent = await this.findParent(id);
-      if (data.constructor === Object) {
+    const parent = this.findNodeById(id);
+    if (!parent) {
+      return false;
+    }
+
+    if (data.constructor === Object) {
+      if (parent[this.children]) {
         parent[this.children].push(data);
       } else {
-        parent[this.children].push(...data);
+        parent[this.children] = [data];
       }
-    } catch (err) {
-      throw new Error('Failed to add sibling nodes.');
+    } else {
+      if (parent[this.children]) {
+        parent[this.children].push(...data);
+      } else {
+        parent[this.children] = data;
+      }
     }
+    return true;
+  }
+
+  addSiblings (id, data) {
+    if (!this.validateParams(id, data)) {
+      return false;
+    }
+
+    const parent = this.findParent(id);
+    if (!parent) {
+      return false;
+    }
+
+    if (data.constructor === Object) {
+      parent[this.children].push(data);
+    } else {
+      parent[this.children].push(...data);
+    }
+    return true;
   }
 
   addRoot (data) {
     const _this = this;
     if (!data || data.constructor !== Object || (data.constructor === Object && !Object.keys(data).length)) {
-      throw new Error('Parameter data is invalid.');
+      return false;
     }
-    try {
-      this.ds[this.children] = [Object.assign({}, this.ds)];
-      delete data[this.children];
-      Object.keys(this.ds).filter(prop => prop !== this.children).forEach(prop => {
-        if (!data[prop]) {
-          delete this.ds[prop];
-        }
-      });
-      Object.assign(this.ds, data);
-    } catch (err) {
-      throw new Error('Failed to add root node.');
-    }
+    
+    this.ds[this.children] = [Object.assign({}, this.ds)];
+    delete data[this.children];
+    Object.keys(this.ds).filter(prop => prop !== this.children).forEach(prop => {
+      if (!data[prop]) {
+        delete this.ds[prop];
+      }
+    });
+    Object.assign(this.ds, data);
+    return true;
   }
 
-  async updateNode (data) {
+  updateNode (data) {
     if (!data
       || data.constructor !== Object
       || (data.constructor === Object && !Object.keys(data).length)
       || (data.constructor === Object && Object.keys(data).length && !data[this.id])) {
-      throw new Error('Parameter data is invalid.');
+      return false;
     }
-    try {
-      const node = await this.findNodeById(data[this.id]);
-      Object.assign(node, data);
-    } catch (err) {
-      throw new Error('Failed to update node.');
-    }
+    
+    const node = this.findNodeById(data[this.id]);
+    Object.assign(node, data);
+    return true;
   }
 
-  async updateNodes (ids, data) {
-    const _this = this;
+  updateNodes (ids, data) {
     if (!ids
       || (ids.constructor === Array && !ids.length)
-      || !data) {
-      throw new Error('Input parameter is invalid.');
+      || !data
+      || data.constructor !== Object
+      || (data.constructor === Object && !Object.keys(data).length)) {
+      return false;
     }
-    try {
-      for (const id of ids) {
-        data[_this.id] = id; 
-        await this.updateNode(data);
+
+    for (const id of ids) {
+      data[this.id] = id; 
+      if (!this.updateNode(data)) {
+        return false;
       }
-    } catch (err) {
-      throw err;
     }
+    return true;
   }
 
   // remove single node based on id
-  async removeNode (id) {
+  removeNode (id) {
     const _this = this;
     if (id === this.ds[this.id]) {
-      throw new Error('Input parameter is invalid.');
+      return false;
     }
-    try {
-      const parent = await this.findParent(id);
-      const index = parent[this.children].map(node => node[_this.id]).indexOf(id);
-      const removed = parent[this.children].splice(index, 1);
-      this.count = 0;
-      return parent;
-    } catch (err) {
-      throw new Error('Failed to remove node.');
+
+    const parent = this.findParent(id);
+    if (!parent) {
+      return false;
     }
+    const index = parent[this.children].map(node => node[_this.id]).indexOf(id);
+    parent[this.children].splice(index, 1);
+    return true;
   }
 
   // param could be single id, id array or conditions object
-  async removeNodes (param) {
+  removeNodes (param) {
     const _this = this;
     if (!param
       || (param.constructor === Array && !param.length)
       || (param.constructor === Object && !Object.keys(param).length)) {
-      throw new Error('Input parameter is invalid.');
+      return false;
     }
-    try {
-      // if passing in single id
-      if (param.constructor === String || param.constructor === Number) {
-        await this.removeNode(param);
-      } else if (param.constructor === Array) { // if passing in id array
-        for (const p of param) {
-          await this.removeNode(p);
-        }
-      } else { // if passing in conditions object
-        const nodes = await this.findNodes(param);
-        const ids = nodes.map(node => node[_this.id]);
-        for (const p of ids) {
-          await this.removeNode(p);
+
+    // if passing in single id
+    if (param.constructor === String || param.constructor === Number) {
+      return this.removeNode(param);
+    } else if (param.constructor === Array) { // if passing in id array
+      for (const p of param) {
+        if(!this.removeNode(p)) {
+          return false;
         }
       }
-    } catch (err) {
-      throw new Error('Failed to remove nodes.');
+      return true;
+    } else { // if passing in conditions object
+      const nodes = this.findNodes(param);
+      if (!nodes.length) {
+        return false;
+      }
+      const ids = nodes.map(node => node[_this.id]);
+      for (const p of ids) {
+        if (!this.removeNode(p)) {
+          return false;
+        }
+      }
+      return true;
     }
   }
 
