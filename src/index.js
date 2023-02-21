@@ -5,21 +5,6 @@ class JSONDigger {
     this.ds = datasource;
     this.id = idProp;
     this.children = childrenProp;
-    this.count = 0;
-  }
-
-  countNodes (obj) {
-    var _this = this;
-    this.count++;
-    if (!obj || !Object.keys(obj).length) {
-      return false;
-    } else {
-      if (obj[this.children]) {
-        obj[this.children].forEach(child => {
-          _this.countNodes(child);
-        });
-      }
-    }
   }
 
   /*

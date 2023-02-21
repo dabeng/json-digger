@@ -6,8 +6,6 @@ const JSONDigger = require('../src/index');
 describe('JSONDigger', () => {
 
   let datasource, digger;
-  const idErrMsg = 'Parameter id is invalid.';
-  const dataErrMsg = 'Parameter data is invalid.';
 
   beforeEach(() => {
     datasource = {
