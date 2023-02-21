@@ -21,4 +21,30 @@ module.exports = {
     ],
   },
   mode: "development",
+  resolve: {
+    fallback: {
+      "assert": false,
+      "buffer": false,
+      "child_process": false,
+      "constants": false,
+      "crypto": false,
+      "esbuild": false,
+      "fs": false,
+      "http": false,
+      "https": false,
+      "inspector": false,
+      "module": false,
+      "os": false,
+      "path": false,
+      "querystring": false,
+      "stream": false,
+      "uglify-js": false,
+      "url": false,
+      "util": false,
+      "vm": false,
+      "worker_threads": false,
+      "zlib": false,
+      "@swc/core": false
+    } 
+  },
 };
